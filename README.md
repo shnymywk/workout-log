@@ -17,6 +17,28 @@ Next.js App Router、TypeScript、styled-components、Supabase Auth / Database �
 - styled-components による小さなUIプリミティブの積み上げ
 - 集計ロジックや表示コンポーネントのテスト
 
+## 技術スタック
+
+| 領域            | 使用技術                         |
+| --------------- | -------------------------------- |
+| フレームワーク  | Next.js App Router               |
+| 言語            | TypeScript                       |
+| UI              | React, styled-components         |
+| グラフ          | Recharts                         |
+| バックエンド    | Supabase Auth, Supabase Database |
+| バリデーション  | Zod                              |
+| テスト          | Jest, React Testing Library      |
+| 静的解析 / 整形 | ESLint, Prettier                 |
+| デプロイ想定    | Vercel                           |
+
+### 技術選定の理由
+
+Next.js App Router は、認証後のアプリ画面と公開ページを同じリポジトリで扱いやすく、Server Components を使ってデータ取得の責務をページ側に寄せやすいため採用しています。
+
+Supabase は Auth、PostgreSQL、RLS をまとめて扱えるため、小さな個人開発アプリでもユーザーごとのデータ分離を実装しやすい点を重視しました。
+
+UI は Tailwind CSS や shadcn/ui を使わず、styled-components で小さなプリミティブを作っています。デザイントークンを `lib/styles/theme.ts` に集約し、ボタン、カード、フォーム、空状態、ローディング表示などをアプリ内で再利用できる形にしています。
+
 ## アプリ構成
 
 ```txt
