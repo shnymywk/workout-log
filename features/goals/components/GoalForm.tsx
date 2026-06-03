@@ -1,0 +1,121 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+import styled from "styled-components";
+
+import { Button, Field, Input, Label, Select } from "@/components/primitives";
+import type { Exercise } from "@/features/exercises/types/exercise";
+import { initialGoalActionState } from "@/features/goals/actions/goals";
+import { saveGoal } from "@/features/goals/actions/goals";
+
+type GoalFormProps = {
+  exercises: Exercise[];
+};
+
+const Form = styled.form`
+  display: grid;
+  gap: ${({ theme }) => theme.space[4]};
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.45fr);
+  gap: ${({ theme }) => theme.space[3]};
+
+  @media (max-width: 833px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const Message = styled.p<{ $tone: "success" | "error" }>`
+  margin: 0;
+  color: ${({ theme, $tone }) =>
+    $tone === "success" ? theme.colors.linkBlue : theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 600;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+`;
+
+const EmptyState = styled.div`
+  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
+  border-radius: ${({ theme }) => theme.radii.card};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  padding: ${({ theme }) => theme.space[6]};
+  text-align: center;
+`;
+
+const EmptyLink = styled(Link)`
+  display: inline-block;
+  margin-top: ${({ theme }) => theme.space[3]};
+  color: ${({ theme }) => theme.colors.linkBlue};
+  font-weight: 600;
+`;
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? "保存中" : "目標を保存"}
+    </Button>
+  );
+}
+
+export function GoalForm({ exercises }: GoalFormProps) {
+  const [state, formAction] = useActionState(saveGoal, initialGoalActionState);
+
+  if (exercises.length === 0) {
+    return (
+      <EmptyState>
+        種目がまだ登録されていません。
+        <br />
+        <EmptyLink href="/exercises">種目を登録する</EmptyLink>
+      </EmptyState>
+    );
+  }
+
+  return (
+    <Form action={formAction}>
+      <FormGrid>
+        <Field>
+          <Label htmlFor="goal-exercise-id">種目</Label>
+          <Select id="goal-exercise-id" name="exerciseId" defaultValue={exercises[0]?.id} required>
+            {exercises.map((exercise) => (
+              <option key={exercise.id} value={exercise.id}>
+                {exercise.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field>
+          <Label htmlFor="target-weight">目標重量</Label>
+          <Input
+            id="target-weight"
+            name="targetWeight"
+            inputMode="decimal"
+            placeholder="100"
+            required
+          />
+        </Field>
+      </FormGrid>
+
+      {state.error ? (
+        <Message $tone="error" role="alert">
+          {state.error}
+        </Message>
+      ) : null}
+      {state.success ? <Message $tone="success">{state.success}</Message> : null}
+
+      <Actions>
+        <SubmitButton />
+      </Actions>
+    </Form>
+  );
+}
