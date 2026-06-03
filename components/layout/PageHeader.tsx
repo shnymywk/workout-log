@@ -14,11 +14,12 @@ const Header = styled.header`
   align-items: flex-end;
   justify-content: space-between;
   gap: ${({ theme }) => theme.space[6]};
-  margin-bottom: ${({ theme }) => theme.space[8]};
+  margin-bottom: ${({ theme }) => theme.space[10]};
 
   @media (max-width: 833px) {
     display: grid;
     align-items: start;
+    margin-bottom: ${({ theme }) => theme.space[6]};
   }
 `;
 
@@ -32,10 +33,14 @@ const Title = styled.h1`
   margin: 0;
   color: ${({ theme }) => theme.colors.textPrimary};
   font-family: ${({ theme }) => theme.fonts.display};
-  font-size: clamp(2rem, 5vw, ${({ theme }) => theme.fontSizes.heading});
+  font-size: ${({ theme }) => theme.fontSizes.heading};
   font-weight: 600;
   line-height: ${({ theme }) => theme.lineHeights.heading};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.tight};
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+
+  @media (max-width: 833px) {
+    font-size: 2rem;
+  }
 `;
 
 const Description = styled.p`

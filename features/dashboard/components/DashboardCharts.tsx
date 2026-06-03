@@ -13,7 +13,14 @@ import {
 } from "recharts";
 import styled, { useTheme } from "styled-components";
 
-import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/primitives";
+import {
+  Card,
+  CardBody,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState
+} from "@/components/primitives";
 import type {
   DailyCountPoint,
   DailyVolumePoint,
@@ -43,7 +50,7 @@ const ChartStack = styled.div`
 
 const ChartGrid = styled.section`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: ${({ theme }) => theme.space[4]};
 
   @media (max-width: 833px) {
@@ -53,26 +60,20 @@ const ChartGrid = styled.section`
 
 const WeightGrid = styled.section`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: ${({ theme }) => theme.space[4]};
 
-  @media (max-width: 1023px) {
+  @media (max-width: 833px) {
     grid-template-columns: 1fr;
   }
 `;
 
 const ChartFrame = styled.div`
-  height: 18rem;
-`;
+  height: 20rem;
 
-const EmptyState = styled.p`
-  margin: 0;
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
-  border-radius: ${({ theme }) => theme.radii.card};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.caption};
-  line-height: ${({ theme }) => theme.lineHeights.body};
-  padding: ${({ theme }) => theme.space[5]};
+  @media (max-width: 833px) {
+    height: 16rem;
+  }
 `;
 
 const TooltipBox = styled.div`

@@ -13,6 +13,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const StyledButton = styled.button<{ $variant: ButtonVariant }>`
   display: inline-flex;
   min-height: 2.75rem;
+  min-width: 2.75rem;
   align-items: center;
   justify-content: center;
   gap: ${({ theme }) => theme.space[2]};
@@ -37,6 +38,10 @@ const StyledButton = styled.button<{ $variant: ButtonVariant }>`
   &:disabled {
     cursor: not-allowed;
     opacity: 0.48;
+  }
+
+  &[aria-busy="true"] {
+    cursor: progress;
   }
 
   ${({ theme, $variant }) => {

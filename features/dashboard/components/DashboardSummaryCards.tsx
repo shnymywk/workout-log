@@ -11,12 +11,8 @@ type DashboardSummaryCardsProps = {
 
 const Grid = styled.section`
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: ${({ theme }) => theme.space[4]};
-
-  @media (max-width: 1023px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 
   @media (max-width: 833px) {
     grid-template-columns: 1fr;
@@ -31,6 +27,11 @@ const Value = styled.p`
   font-weight: 600;
   line-height: ${({ theme }) => theme.lineHeights.heading};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  overflow-wrap: anywhere;
+
+  @media (max-width: 833px) {
+    font-size: 1.75rem;
+  }
 `;
 
 function formatAchievementRate(rate: number | null) {

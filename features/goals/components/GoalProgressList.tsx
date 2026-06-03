@@ -2,6 +2,7 @@
 
 import styled from "styled-components";
 
+import { EmptyState } from "@/components/primitives";
 import type { GoalProgress } from "@/features/goals/types/goal";
 
 type GoalProgressListProps = {
@@ -51,14 +52,6 @@ const Rate = styled.p`
   font-weight: 600;
   line-height: ${({ theme }) => theme.lineHeights.compact};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-`;
-
-const EmptyState = styled.div`
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
-  border-radius: ${({ theme }) => theme.radii.card};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding: ${({ theme }) => theme.space[6]};
-  text-align: center;
 `;
 
 function formatWeight(weight: number | null) {

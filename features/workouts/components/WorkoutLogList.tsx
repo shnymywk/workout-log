@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import { Button, Field, Input, Label, Select, Textarea } from "@/components/primitives";
+import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import {
   deleteWorkoutLog,
@@ -105,14 +105,6 @@ const Message = styled.p<{ $tone: "success" | "error" }>`
   font-size: ${({ theme }) => theme.fontSizes.caption};
   font-weight: 600;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-`;
-
-const EmptyState = styled.div`
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
-  border-radius: ${({ theme }) => theme.radii.card};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding: ${({ theme }) => theme.space[6]};
-  text-align: center;
 `;
 
 function SaveButton() {

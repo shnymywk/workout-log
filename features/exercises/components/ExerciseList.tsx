@@ -11,7 +11,7 @@ import {
 } from "@/features/exercises/actions/exercises";
 import type { BodyPart } from "@/features/exercises/types/body-part";
 import type { Exercise } from "@/features/exercises/types/exercise";
-import { Button, Input, Select } from "@/components/primitives";
+import { Button, EmptyState, Input, Select } from "@/components/primitives";
 
 type ExerciseListProps = {
   bodyParts: BodyPart[];
@@ -64,14 +64,6 @@ const Message = styled.p<{ $tone: "success" | "error" }>`
   font-size: ${({ theme }) => theme.fontSizes.caption};
   font-weight: 600;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-`;
-
-const EmptyState = styled.div`
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
-  border-radius: ${({ theme }) => theme.radii.card};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding: ${({ theme }) => theme.space[6]};
-  text-align: center;
 `;
 
 function UpdateButton() {

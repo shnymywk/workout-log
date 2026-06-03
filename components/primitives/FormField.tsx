@@ -16,6 +16,7 @@ type FieldProps = {
 const FieldWrapper = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.space[2]};
+  min-width: 0;
 `;
 
 const StyledLabel = styled.label`
@@ -28,6 +29,7 @@ const StyledLabel = styled.label`
 
 const controlStyles = css`
   width: 100%;
+  min-height: 2.75rem;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.control};
   background: ${({ theme }) => theme.colors.background};
@@ -45,6 +47,14 @@ const controlStyles = css`
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderStrong};
+  }
+
+  &:focus-visible {
+    border-color: ${({ theme }) => theme.colors.appleBlue};
+  }
+
+  &[aria-invalid="true"] {
+    border-color: ${({ theme }) => theme.colors.danger};
   }
 
   &:disabled {
