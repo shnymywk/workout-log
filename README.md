@@ -256,3 +256,16 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+## Vercel デプロイ
+
+Vercel にデプロイする場合は、GitHub リポジトリを Import し、以下の環境変数を設定します。
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Build Command は `npm run build`、Install Command は `npm install` を想定しています。
+
+Supabase 側では、本番用プロジェクトに migration を適用し、Authentication の設定とリダイレクトURLをデプロイ先URLに合わせてください。
