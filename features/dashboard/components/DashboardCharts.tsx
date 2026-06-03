@@ -43,7 +43,7 @@ const ChartStack = styled.div`
 
 const ChartGrid = styled.section`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: ${({ theme }) => theme.space[4]};
 
   @media (max-width: 833px) {
@@ -53,16 +53,20 @@ const ChartGrid = styled.section`
 
 const WeightGrid = styled.section`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: ${({ theme }) => theme.space[4]};
 
-  @media (max-width: 1023px) {
+  @media (max-width: 833px) {
     grid-template-columns: 1fr;
   }
 `;
 
 const ChartFrame = styled.div`
-  height: 18rem;
+  height: 20rem;
+
+  @media (max-width: 833px) {
+    height: 16rem;
+  }
 `;
 
 const EmptyState = styled.p`

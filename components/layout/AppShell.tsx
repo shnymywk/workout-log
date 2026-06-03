@@ -17,7 +17,7 @@ const Shell = styled.div`
 
   @media (min-width: 1024px) {
     display: grid;
-    grid-template-columns: 17.5rem minmax(0, 1fr);
+    grid-template-columns: 16.5rem minmax(0, 1fr);
   }
 `;
 
@@ -28,7 +28,12 @@ const Main = styled.main`
 const MainInner = styled.div`
   width: min(100% - 2rem, ${({ theme }) => theme.layout.contentMaxWidth});
   margin: 0 auto;
-  padding: clamp(1.5rem, 4vw, 3rem) 0;
+  padding: ${({ theme }) => theme.space[8]} 0 ${({ theme }) => theme.space[12]};
+
+  @media (min-width: 1024px) {
+    width: min(100% - 4rem, ${({ theme }) => theme.layout.contentMaxWidth});
+    padding: ${({ theme }) => theme.space[10]} 0 ${({ theme }) => theme.space[16]};
+  }
 `;
 
 export function AppShell({ children }: AppShellProps) {
