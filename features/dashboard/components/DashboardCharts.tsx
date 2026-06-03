@@ -13,7 +13,14 @@ import {
 } from "recharts";
 import styled, { useTheme } from "styled-components";
 
-import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/primitives";
+import {
+  Card,
+  CardBody,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState
+} from "@/components/primitives";
 import type {
   DailyCountPoint,
   DailyVolumePoint,
@@ -67,16 +74,6 @@ const ChartFrame = styled.div`
   @media (max-width: 833px) {
     height: 16rem;
   }
-`;
-
-const EmptyState = styled.p`
-  margin: 0;
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
-  border-radius: ${({ theme }) => theme.radii.card};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.caption};
-  line-height: ${({ theme }) => theme.lineHeights.body};
-  padding: ${({ theme }) => theme.space[5]};
 `;
 
 const TooltipBox = styled.div`

@@ -6,7 +6,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import { Button, Field, Input, Label, Select, Textarea } from "@/components/primitives";
+import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import {
   createWorkoutLog,
@@ -71,17 +71,7 @@ const VolumeValue = styled.p`
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
-const EmptyState = styled.div`
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
-  border-radius: ${({ theme }) => theme.radii.card};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding: ${({ theme }) => theme.space[6]};
-  text-align: center;
-`;
-
 const EmptyLink = styled(Link)`
-  display: inline-block;
-  margin-top: ${({ theme }) => theme.space[3]};
   color: ${({ theme }) => theme.colors.linkBlue};
   font-weight: 600;
 `;
@@ -112,10 +102,8 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
 
   if (exercises.length === 0) {
     return (
-      <EmptyState>
+      <EmptyState action={<EmptyLink href="/exercises">種目を登録する</EmptyLink>}>
         種目がまだ登録されていません。
-        <br />
-        <EmptyLink href="/exercises">種目を登録する</EmptyLink>
       </EmptyState>
     );
   }
