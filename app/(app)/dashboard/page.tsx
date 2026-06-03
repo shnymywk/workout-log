@@ -2,7 +2,7 @@ import { DashboardSummaryPage } from "@/features/dashboard/components/DashboardS
 import { getDashboardSummary } from "@/features/dashboard/lib/dashboard";
 
 export default async function DashboardPage() {
-  const { summary, errors } = await getDashboardSummary();
+  const { charts, summary, errors } = await getDashboardSummary();
 
-  return <DashboardSummaryPage summary={summary} errors={errors} />;
+  return <DashboardSummaryPage charts={charts} summary={summary} errors={errors} />;
 }

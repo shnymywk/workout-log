@@ -3,10 +3,13 @@
 import styled from "styled-components";
 
 import { PageHeader } from "@/components/layout/PageHeader";
+import { DashboardCharts } from "@/features/dashboard/components/DashboardCharts";
 import { DashboardSummaryCards } from "@/features/dashboard/components/DashboardSummaryCards";
+import type { DashboardCharts as DashboardChartsData } from "@/features/dashboard/lib/charts";
 import type { DashboardSummary } from "@/features/dashboard/lib/summary";
 
 type DashboardSummaryPageProps = {
+  charts: DashboardChartsData;
   summary: DashboardSummary;
   errors: string[];
 };
@@ -33,7 +36,7 @@ const ErrorText = styled.p`
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
-export function DashboardSummaryPage({ summary, errors }: DashboardSummaryPageProps) {
+export function DashboardSummaryPage({ charts, summary, errors }: DashboardSummaryPageProps) {
   return (
     <>
       <PageHeader
@@ -50,6 +53,7 @@ export function DashboardSummaryPage({ summary, errors }: DashboardSummaryPagePr
           </ErrorList>
         ) : null}
         <DashboardSummaryCards summary={summary} />
+        <DashboardCharts charts={charts} />
       </Stack>
     </>
   );
