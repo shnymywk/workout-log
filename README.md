@@ -101,3 +101,73 @@ types/
 | `/goals`     | 種目ごとの目標重量と達成率の管理             |
 
 `/dashboard`、`/workouts`、`/exercises`、`/goals` はログイン後にアクセスする画面です。未ログインの場合は `/login` にリダイレクトします。
+
+## テーブル設計
+
+```mermaid
+erDiagram
+  auth_users ||--|| profiles : has
+  auth_users ||--o{ body_parts : owns
+  auth_users ||--o{ exercises : owns
+  auth_users ||--o{ workout_logs : owns
+  auth_users ||--o{ goals : owns
+  body_parts ||--o{ exercises : categorizes
+  exercises ||--o{ workout_logs : recorded_as
+  exercises ||--o{ goals : targeted_by
+```
+
+### profiles
+
+| カラム         | 説明                       |
+| -------------- | -------------------------- |
+| `id`           | Supabase Auth のユーザーID |
+| `display_name` | 表示名                     |
+| `created_at`   | 作成日時                   |
+
+### body_parts
+
+| カラム       | 説明           |
+| ------------ | -------------- |
+| `id`         | 部位ID         |
+| `user_id`    | 所有ユーザーID |
+| `name`       | 部位名         |
+| `created_at` | 作成日時       |
+
+### exercises
+
+| カラム         | 説明           |
+| -------------- | -------------- |
+| `id`           | 種目ID         |
+| `user_id`      | 所有ユーザーID |
+| `body_part_id` | 紐づく部位ID   |
+| `name`         | 種目名         |
+| `created_at`   | 作成日時       |
+| `updated_at`   | 更新日時       |
+
+### workout_logs
+
+| カラム        | 説明           |
+| ------------- | -------------- |
+| `id`          | 記録ID         |
+| `user_id`     | 所有ユーザーID |
+| `exercise_id` | 紐づく種目ID   |
+| `trained_at`  | トレーニング日 |
+| `weight`      | 重量           |
+| `sets`        | セット数       |
+| `reps`        | 回数           |
+| `memo`        | メモ           |
+| `created_at`  | 作成日時       |
+| `updated_at`  | 更新日時       |
+
+### goals
+
+| カラム          | 説明           |
+| --------------- | -------------- |
+| `id`            | 目標ID         |
+| `user_id`       | 所有ユーザーID |
+| `exercise_id`   | 紐づく種目ID   |
+| `target_weight` | 目標重量       |
+| `created_at`    | 作成日時       |
+| `updated_at`    | 更新日時       |
+
+全テーブルで Row Level Security を有効化し、`user_id = auth.uid()` の行のみ操作できるようにしています。`exercises`、`workout_logs`、`goals` では、関連する部位・種目が同じユーザーに属していることもトリガーで検証します。
