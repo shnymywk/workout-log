@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+dist
+coverage
+package-lock.json
+
+initial_prompt.md
+design.md
+PLAN .md
