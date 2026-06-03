@@ -3,8 +3,8 @@
 import Link from "next/link";
 import styled from "styled-components";
 
-import { Button } from "@/components/primitives";
 import { appNavigationItems } from "@/components/layout/navigation";
+import { LogoutButton } from "@/features/auth/components/LogoutButton";
 
 type DesktopSidebarProps = {
   pathname: string;
@@ -136,7 +136,7 @@ export function DesktopSidebar({ pathname }: DesktopSidebarProps) {
           <UserName>Shunya Miyawaki</UserName>
           <UserEmail>sample@example.com</UserEmail>
         </UserSummary>
-        <Button variant="secondary">ログアウト</Button>
+        <LogoutButton />
       </SidebarFooter>
     </Sidebar>
   );

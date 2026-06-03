@@ -3,8 +3,8 @@
 import Link from "next/link";
 import styled from "styled-components";
 
-import { Button } from "@/components/primitives";
 import { appNavigationItems } from "@/components/layout/navigation";
+import { LogoutButton } from "@/features/auth/components/LogoutButton";
 
 type MobileNavigationProps = {
   pathname: string;
@@ -82,7 +82,7 @@ export function MobileNavigation({ pathname }: MobileNavigationProps) {
     <MobileHeader>
       <MobileHeaderInner>
         <Brand href="/dashboard">Workout Log</Brand>
-        <Button variant="ghost">ログアウト</Button>
+        <LogoutButton variant="ghost" />
       </MobileHeaderInner>
       <MobileNav aria-label="アプリナビゲーション">
         {appNavigationItems.map((item) => (
