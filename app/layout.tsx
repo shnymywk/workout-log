@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { AppStyleProvider } from "@/lib/styles/AppStyleProvider";
+import { StyledComponentsRegistry } from "@/lib/styles/StyledComponentsRegistry";
+
 export const metadata: Metadata = {
   title: "Workout Log",
   description: "A simple training record app for tracking workout progress."
@@ -13,7 +16,11 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <StyledComponentsRegistry>
+          <AppStyleProvider>{children}</AppStyleProvider>
+        </StyledComponentsRegistry>
+      </body>
     </html>
   );
 }
