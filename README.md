@@ -171,3 +171,88 @@ erDiagram
 | `updated_at`    | 更新日時       |
 
 全テーブルで Row Level Security を有効化し、`user_id = auth.uid()` の行のみ操作できるようにしています。`exercises`、`workout_logs`、`goals` では、関連する部位・種目が同じユーザーに属していることもトリガーで検証します。
+
+## セットアップ
+
+### 1. 依存関係のインストール
+
+```bash
+npm install
+```
+
+### 2. 環境変数の設定
+
+`.env.example` をもとに `.env.local` を作成します。
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local` に Supabase の値を設定します。
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` も読み込めますが、新規設定では `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` を優先します。
+
+### 3. Supabase の設定
+
+Supabase プロジェクトを作成し、Authentication の Email / Password を有効にします。
+
+その後、`supabase/migrations/` 配下のSQLを番号順に適用します。
+
+```txt
+20260603000100_create_profiles.sql
+20260603000200_create_body_parts_and_exercises.sql
+20260603000300_create_workout_logs.sql
+20260603000400_create_goals.sql
+20260603000500_create_rls_policies.sql
+```
+
+Supabase CLI を使う場合は、プロジェクトと接続したうえで migration を適用してください。CLI を使わない場合は、Supabase Dashboard の SQL Editor から順番に実行できます。
+
+### 4. 開発サーバーの起動
+
+```bash
+npm run dev
+```
+
+ブラウザで `http://localhost:3000` を開きます。
+
+## 利用できるスクリプト
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run format
+npm run format:check
+npm run typecheck
+npm test
+```
+
+## テスト
+
+このリポジトリでは、以下を中心にテストしています。
+
+- フォーム入力のバリデーション
+- 認証UIの表示
+- トレーニング記録フォームと一覧UI
+- 総ボリューム計算
+- 目標達成率計算
+- ダッシュボードのサマリー集計
+- ダッシュボードグラフ用のデータ整形
+- 表示コンポーネントの空状態や主要要素
+
+開発時の確認コマンドは以下です。
+
+```bash
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
