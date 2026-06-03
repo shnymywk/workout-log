@@ -16,6 +16,7 @@ import styled, { useTheme } from "styled-components";
 import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/primitives";
 import type {
   DailyCountPoint,
+  DailyVolumePoint,
   DashboardCharts as DashboardChartsData,
   ExerciseWeightPoint
 } from "@/features/dashboard/lib/charts";
@@ -136,6 +137,31 @@ function FrequencyChart({ data }: { data: DailyCountPoint[] }) {
   );
 }
 
+function VolumeChart({ data }: { data: DailyVolumePoint[] }) {
+  const theme = useTheme();
+
+  return (
+    <ChartFrame>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <CartesianGrid stroke={theme.colors.border} vertical={false} />
+          <XAxis dataKey="label" stroke={theme.colors.textSecondary} tickLine={false} />
+          <YAxis stroke={theme.colors.textSecondary} tickLine={false} />
+          <Tooltip content={<DashboardTooltip />} />
+          <Line
+            dataKey="volume"
+            dot={false}
+            name="ボリューム"
+            stroke={theme.colors.linkBlue}
+            strokeWidth={3}
+            type="monotone"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartFrame>
+  );
+}
+
 function WeightChart({ data }: { data: ExerciseWeightPoint[] }) {
   const theme = useTheme();
 
@@ -163,6 +189,10 @@ function WeightChart({ data }: { data: ExerciseWeightPoint[] }) {
 
 function hasFrequencyData(data: DailyCountPoint[]) {
   return data.some((point) => point.count > 0);
+}
+
+function hasVolumeData(data: DailyVolumePoint[]) {
+  return data.some((point) => point.volume > 0);
 }
 
 export function DashboardCharts({ charts }: DashboardChartsProps) {
@@ -199,6 +229,20 @@ export function DashboardCharts({ charts }: DashboardChartsProps) {
           </CardBody>
         </Card>
       </ChartGrid>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>総ボリューム推移</CardTitle>
+          <CardDescription>直近30日間の日別合計ボリューム</CardDescription>
+        </CardHeader>
+        <CardBody>
+          {hasVolumeData(charts.volumeSeries) ? (
+            <VolumeChart data={charts.volumeSeries} />
+          ) : (
+            <ChartEmptyState />
+          )}
+        </CardBody>
+      </Card>
 
       <WeightGrid>
         {hasExerciseWeightSeries ? (

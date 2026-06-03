@@ -1,3 +1,4 @@
+import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
 import type { WorkoutLog } from "@/features/workouts/types/workout-log";
 
 export type ExerciseWeightPoint = {
@@ -19,10 +20,17 @@ export type DailyCountPoint = {
   count: number;
 };
 
+export type DailyVolumePoint = {
+  date: string;
+  label: string;
+  volume: number;
+};
+
 export type DashboardCharts = {
   exerciseWeightSeries: ExerciseWeightSeries[];
   weeklyFrequencySeries: DailyCountPoint[];
   monthlyFrequencySeries: DailyCountPoint[];
+  volumeSeries: DailyVolumePoint[];
 };
 
 function toDateValue(date: Date) {
@@ -98,6 +106,24 @@ function buildDailyCountSeries(workoutLogs: WorkoutLog[], today: Date, days: num
   }));
 }
 
+function buildDailyVolumeSeries(workoutLogs: WorkoutLog[], today: Date, days: number) {
+  const volumeByDate = new Map<string, number>();
+
+  workoutLogs.forEach((workoutLog) => {
+    volumeByDate.set(
+      workoutLog.trained_at,
+      (volumeByDate.get(workoutLog.trained_at) ?? 0) +
+        calculateWorkoutVolume(workoutLog.weight, workoutLog.sets, workoutLog.reps)
+    );
+  });
+
+  return buildDateValues(today, days).map((date) => ({
+    date,
+    label: toDateLabel(date),
+    volume: volumeByDate.get(date) ?? 0
+  }));
+}
+
 export function buildDashboardCharts({
   today,
   workoutLogs
@@ -108,6 +134,7 @@ export function buildDashboardCharts({
   return {
     exerciseWeightSeries: buildExerciseWeightSeries(workoutLogs),
     weeklyFrequencySeries: buildDailyCountSeries(workoutLogs, today, 7),
-    monthlyFrequencySeries: buildDailyCountSeries(workoutLogs, today, 30)
+    monthlyFrequencySeries: buildDailyCountSeries(workoutLogs, today, 30),
+    volumeSeries: buildDailyVolumeSeries(workoutLogs, today, 30)
   };
 }
