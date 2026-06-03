@@ -13,14 +13,37 @@ export type ExerciseWeightSeries = {
   points: ExerciseWeightPoint[];
 };
 
+export type DailyCountPoint = {
+  date: string;
+  label: string;
+  count: number;
+};
+
 export type DashboardCharts = {
   exerciseWeightSeries: ExerciseWeightSeries[];
+  weeklyFrequencySeries: DailyCountPoint[];
+  monthlyFrequencySeries: DailyCountPoint[];
 };
+
+function toDateValue(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setUTCDate(nextDate.getUTCDate() + days);
+
+  return nextDate;
+}
 
 function toDateLabel(dateValue: string) {
   const [, month, day] = dateValue.split("-");
 
   return `${Number(month)}/${Number(day)}`;
+}
+
+function buildDateValues(today: Date, days: number) {
+  return Array.from({ length: days }, (_, index) => toDateValue(addDays(today, index - days + 1)));
 }
 
 function sortWorkoutLogsByDate(workoutLogs: WorkoutLog[]) {
@@ -61,12 +84,30 @@ function buildExerciseWeightSeries(workoutLogs: WorkoutLog[]) {
   );
 }
 
+function buildDailyCountSeries(workoutLogs: WorkoutLog[], today: Date, days: number) {
+  const countByDate = new Map<string, number>();
+
+  workoutLogs.forEach((workoutLog) => {
+    countByDate.set(workoutLog.trained_at, (countByDate.get(workoutLog.trained_at) ?? 0) + 1);
+  });
+
+  return buildDateValues(today, days).map((date) => ({
+    date,
+    label: toDateLabel(date),
+    count: countByDate.get(date) ?? 0
+  }));
+}
+
 export function buildDashboardCharts({
+  today,
   workoutLogs
 }: {
+  today: Date;
   workoutLogs: WorkoutLog[];
 }): DashboardCharts {
   return {
-    exerciseWeightSeries: buildExerciseWeightSeries(workoutLogs)
+    exerciseWeightSeries: buildExerciseWeightSeries(workoutLogs),
+    weeklyFrequencySeries: buildDailyCountSeries(workoutLogs, today, 7),
+    monthlyFrequencySeries: buildDailyCountSeries(workoutLogs, today, 30)
   };
 }

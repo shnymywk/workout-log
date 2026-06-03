@@ -23,7 +23,8 @@ export async function getDashboardSummary(): Promise<DashboardSummaryResult> {
 
   return {
     charts: buildDashboardCharts({
-      workoutLogs: workoutLogsResult.workoutLogs
+      workoutLogs: workoutLogsResult.workoutLogs,
+      today
     }),
     summary: buildDashboardSummary({
       workoutLogs: workoutLogsResult.workoutLogs,

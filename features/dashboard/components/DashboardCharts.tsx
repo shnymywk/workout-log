@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Line,
   LineChart,
@@ -13,6 +15,7 @@ import styled, { useTheme } from "styled-components";
 
 import { Card, CardBody, CardDescription, CardHeader, CardTitle } from "@/components/primitives";
 import type {
+  DailyCountPoint,
   DashboardCharts as DashboardChartsData,
   ExerciseWeightPoint
 } from "@/features/dashboard/lib/charts";
@@ -35,6 +38,16 @@ type TooltipContentProps = {
 const ChartStack = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.space[5]};
+`;
+
+const ChartGrid = styled.section`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: ${({ theme }) => theme.space[4]};
+
+  @media (max-width: 833px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const WeightGrid = styled.section`
@@ -105,6 +118,24 @@ function ChartEmptyState() {
   return <EmptyState>表示できるトレーニング記録がありません。</EmptyState>;
 }
 
+function FrequencyChart({ data }: { data: DailyCountPoint[] }) {
+  const theme = useTheme();
+
+  return (
+    <ChartFrame>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid stroke={theme.colors.border} vertical={false} />
+          <XAxis dataKey="label" stroke={theme.colors.textSecondary} tickLine={false} />
+          <YAxis allowDecimals={false} stroke={theme.colors.textSecondary} tickLine={false} />
+          <Tooltip content={<DashboardTooltip />} />
+          <Bar dataKey="count" fill={theme.colors.appleBlue} name="記録数" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartFrame>
+  );
+}
+
 function WeightChart({ data }: { data: ExerciseWeightPoint[] }) {
   const theme = useTheme();
 
@@ -130,11 +161,45 @@ function WeightChart({ data }: { data: ExerciseWeightPoint[] }) {
   );
 }
 
+function hasFrequencyData(data: DailyCountPoint[]) {
+  return data.some((point) => point.count > 0);
+}
+
 export function DashboardCharts({ charts }: DashboardChartsProps) {
   const hasExerciseWeightSeries = charts.exerciseWeightSeries.length > 0;
 
   return (
     <ChartStack>
+      <ChartGrid>
+        <Card>
+          <CardHeader>
+            <CardTitle>週間頻度</CardTitle>
+            <CardDescription>直近7日間の日別記録数</CardDescription>
+          </CardHeader>
+          <CardBody>
+            {hasFrequencyData(charts.weeklyFrequencySeries) ? (
+              <FrequencyChart data={charts.weeklyFrequencySeries} />
+            ) : (
+              <ChartEmptyState />
+            )}
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>月間頻度</CardTitle>
+            <CardDescription>直近30日間の日別記録数</CardDescription>
+          </CardHeader>
+          <CardBody>
+            {hasFrequencyData(charts.monthlyFrequencySeries) ? (
+              <FrequencyChart data={charts.monthlyFrequencySeries} />
+            ) : (
+              <ChartEmptyState />
+            )}
+          </CardBody>
+        </Card>
+      </ChartGrid>
+
       <WeightGrid>
         {hasExerciseWeightSeries ? (
           charts.exerciseWeightSeries.map((series) => (
