@@ -3,13 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { bodyPartFormSchema } from "@/features/exercises/schemas/body-part-schema";
-import {
-  initialBodyPartActionState,
-  type BodyPartActionState
-} from "@/features/exercises/types/body-part";
+import type { BodyPartActionState } from "@/features/exercises/types/body-part";
 import { createClient } from "@/lib/supabase/server";
-
-export { initialBodyPartActionState };
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";
@@ -25,8 +20,16 @@ function getBodyPartId(formData: FormData) {
   return id;
 }
 
-function mapBodyPartMutationError() {
-  return "同じ名前の部位がすでに登録されています。";
+function mapBodyPartMutationError(error: { code?: string }) {
+  if (error.code === "23505") {
+    return "同じ名前の部位がすでに登録されています。";
+  }
+
+  if (error.code === "42501") {
+    return "部位を保存できませんでした。ログイン状態またはデータベースの権限設定を確認してください。";
+  }
+
+  return "部位を保存できませんでした。データベース設定を確認してください。";
 }
 
 export async function createBodyPart(
@@ -45,13 +48,25 @@ export async function createBodyPart(
   }
 
   const supabase = await createClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    return {
+      error: "ログイン状態を確認できませんでした。もう一度ログインしてください。",
+      success: null
+    };
+  }
+
   const { error } = await supabase.from("body_parts").insert({
-    name: parsed.data.name
+    name: parsed.data.name,
+    user_id: userData.user.id
   });
 
   if (error) {
+    console.error("Failed to create body part", error);
+
     return {
-      error: mapBodyPartMutationError(),
+      error: mapBodyPartMutationError(error),
       success: null
     };
   }
@@ -89,14 +104,26 @@ export async function updateBodyPart(
   }
 
   const supabase = await createClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    return {
+      error: "ログイン状態を確認できませんでした。もう一度ログインしてください。",
+      success: null
+    };
+  }
+
   const { error } = await supabase
     .from("body_parts")
     .update({ name: parsed.data.name })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userData.user.id);
 
   if (error) {
+    console.error("Failed to update body part", error);
+
     return {
-      error: mapBodyPartMutationError(),
+      error: mapBodyPartMutationError(error),
       success: null
     };
   }
@@ -117,7 +144,13 @@ export async function deleteBodyPart(formData: FormData) {
   }
 
   const supabase = await createClient();
-  await supabase.from("body_parts").delete().eq("id", id);
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    return;
+  }
+
+  await supabase.from("body_parts").delete().eq("id", id).eq("user_id", userData.user.id);
 
   revalidatePath("/exercises");
 }

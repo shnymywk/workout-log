@@ -6,11 +6,7 @@ import { WorkoutLogCreateForm } from "@/features/workouts/components/WorkoutLogC
 import { theme } from "@/lib/styles/theme";
 
 jest.mock("@/features/workouts/actions/workout-logs", () => ({
-  createWorkoutLog: jest.fn(),
-  initialWorkoutLogActionState: {
-    error: null,
-    success: null
-  }
+  createWorkoutLog: jest.fn()
 }));
 
 const exercises = [

@@ -4,12 +4,8 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import {
-  deleteBodyPart,
-  initialBodyPartActionState,
-  updateBodyPart
-} from "@/features/exercises/actions/body-parts";
-import type { BodyPart } from "@/features/exercises/types/body-part";
+import { deleteBodyPart, updateBodyPart } from "@/features/exercises/actions/body-parts";
+import { initialBodyPartActionState, type BodyPart } from "@/features/exercises/types/body-part";
 import { Button, EmptyState, Input } from "@/components/primitives";
 
 type BodyPartListProps = {

@@ -6,13 +6,12 @@ import styled from "styled-components";
 
 import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
-import {
-  deleteWorkoutLog,
-  initialWorkoutLogActionState,
-  updateWorkoutLog
-} from "@/features/workouts/actions/workout-logs";
+import { deleteWorkoutLog, updateWorkoutLog } from "@/features/workouts/actions/workout-logs";
 import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
-import type { WorkoutLog } from "@/features/workouts/types/workout-log";
+import {
+  initialWorkoutLogActionState,
+  type WorkoutLog
+} from "@/features/workouts/types/workout-log";
 
 type WorkoutLogListProps = {
   exercises: Exercise[];

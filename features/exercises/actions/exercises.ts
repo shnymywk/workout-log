@@ -3,13 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { exerciseFormSchema } from "@/features/exercises/schemas/exercise-schema";
-import {
-  initialExerciseActionState,
-  type ExerciseActionState
-} from "@/features/exercises/types/exercise";
+import type { ExerciseActionState } from "@/features/exercises/types/exercise";
 import { createClient } from "@/lib/supabase/server";
-
-export { initialExerciseActionState };
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";
@@ -25,8 +20,16 @@ function getExerciseId(formData: FormData) {
   return id;
 }
 
-function mapExerciseMutationError() {
-  return "同じ名前の種目がすでに登録されています。";
+function mapExerciseMutationError(error: { code?: string }) {
+  if (error.code === "23505") {
+    return "同じ名前の種目がすでに登録されています。";
+  }
+
+  if (error.code === "42501") {
+    return "種目を保存できませんでした。ログイン状態またはデータベースの権限設定を確認してください。";
+  }
+
+  return "種目を保存できませんでした。データベース設定を確認してください。";
 }
 
 export async function createExercise(
@@ -46,14 +49,26 @@ export async function createExercise(
   }
 
   const supabase = await createClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    return {
+      error: "ログイン状態を確認できませんでした。もう一度ログインしてください。",
+      success: null
+    };
+  }
+
   const { error } = await supabase.from("exercises").insert({
     name: parsed.data.name,
-    body_part_id: parsed.data.bodyPartId
+    body_part_id: parsed.data.bodyPartId,
+    user_id: userData.user.id
   });
 
   if (error) {
+    console.error("Failed to create exercise", error);
+
     return {
-      error: mapExerciseMutationError(),
+      error: mapExerciseMutationError(error),
       success: null
     };
   }
@@ -92,6 +107,15 @@ export async function updateExercise(
   }
 
   const supabase = await createClient();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    return {
+      error: "ログイン状態を確認できませんでした。もう一度ログインしてください。",
+      success: null
+    };
+  }
+
   const { error } = await supabase
     .from("exercises")
     .update({
@@ -99,11 +123,14 @@ export async function updateExercise(
       body_part_id: parsed.data.bodyPartId,
       updated_at: new Date().toISOString()
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userData.user.id);
 
   if (error) {
+    console.error("Failed to update exercise", error);
+
     return {
-      error: mapExerciseMutationError(),
+      error: mapExerciseMutationError(error),
       success: null
     };
   }
@@ -124,7 +151,13 @@ export async function deleteExercise(formData: FormData) {
   }
 
   const supabase = await createClient();
-  await supabase.from("exercises").delete().eq("id", id);
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    return;
+  }
+
+  await supabase.from("exercises").delete().eq("id", id).eq("user_id", userData.user.id);
 
   revalidatePath("/exercises");
 }

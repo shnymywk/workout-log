@@ -4,10 +4,8 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import {
-  createBodyPart,
-  initialBodyPartActionState
-} from "@/features/exercises/actions/body-parts";
+import { createBodyPart } from "@/features/exercises/actions/body-parts";
+import { initialBodyPartActionState } from "@/features/exercises/types/body-part";
 import { Button, Field, Input, Label } from "@/components/primitives";
 
 const Form = styled.form`

@@ -8,11 +8,9 @@ import styled from "styled-components";
 
 import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
-import {
-  createWorkoutLog,
-  initialWorkoutLogActionState
-} from "@/features/workouts/actions/workout-logs";
+import { createWorkoutLog } from "@/features/workouts/actions/workout-logs";
 import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
+import { initialWorkoutLogActionState } from "@/features/workouts/types/workout-log";
 
 type WorkoutLogCreateFormProps = {
   exercises: Exercise[];
