@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import styled from "styled-components";
 
 import {
@@ -44,6 +45,30 @@ const Brand = styled.p`
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+`;
+
+const LoginLink = styled(Link)`
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  color: ${({ theme }) => theme.colors.linkBlue};
+  padding: 0.625rem 1.375rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.backgroundElevated};
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
 `;
 
 const Content = styled.div`
@@ -157,7 +182,7 @@ export default function HomePage() {
       <Header>
         <HeaderInner>
           <Brand>Workout Log</Brand>
-          <Button variant="ghost">ログイン</Button>
+          <LoginLink href="/login">ログイン</LoginLink>
         </HeaderInner>
       </Header>
 
