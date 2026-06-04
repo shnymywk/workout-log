@@ -2,12 +2,13 @@ import { LoginForm } from "@/features/auth/components/LoginForm";
 
 type LoginPageProps = {
   searchParams: Promise<{
+    mode?: string;
     next?: string;
   }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { next } = await searchParams;
+  const { mode, next } = await searchParams;
 
-  return <LoginForm nextPath={next} />;
+  return <LoginForm initialMode={mode === "signUp" ? "signUp" : "login"} nextPath={next} />;
 }

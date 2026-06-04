@@ -42,4 +42,15 @@ describe("LoginForm", () => {
       screen.getByText("メール確認が有効な場合は、確認メールのリンクから登録を完了します。")
     ).toBeInTheDocument();
   });
+
+  it("can render sign up mode first", () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <LoginForm initialMode="signUp" nextPath="/dashboard" />
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole("heading", { name: "新規登録" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "登録する" })).toBeInTheDocument();
+  });
 });
