@@ -7,8 +7,8 @@ import styled from "styled-components";
 
 import { Button, EmptyState, Field, Input, Label, Select } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
-import { initialGoalActionState } from "@/features/goals/actions/goals";
 import { saveGoal } from "@/features/goals/actions/goals";
+import { initialGoalActionState } from "@/features/goals/types/goal";
 
 type GoalFormProps = {
   exercises: Exercise[];

@@ -4,8 +4,9 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import { createExercise, initialExerciseActionState } from "@/features/exercises/actions/exercises";
+import { createExercise } from "@/features/exercises/actions/exercises";
 import type { BodyPart } from "@/features/exercises/types/body-part";
+import { initialExerciseActionState } from "@/features/exercises/types/exercise";
 import { Button, Field, Input, Label, Select } from "@/components/primitives";
 
 type ExerciseCreateFormProps = {

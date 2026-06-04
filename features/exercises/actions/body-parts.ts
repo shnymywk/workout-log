@@ -3,13 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { bodyPartFormSchema } from "@/features/exercises/schemas/body-part-schema";
-import {
-  initialBodyPartActionState,
-  type BodyPartActionState
-} from "@/features/exercises/types/body-part";
+import type { BodyPartActionState } from "@/features/exercises/types/body-part";
 import { createClient } from "@/lib/supabase/server";
-
-export { initialBodyPartActionState };
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";

@@ -3,13 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { workoutLogFormSchema } from "@/features/workouts/schemas/workout-log-schema";
-import {
-  initialWorkoutLogActionState,
-  type WorkoutLogActionState
-} from "@/features/workouts/types/workout-log";
+import type { WorkoutLogActionState } from "@/features/workouts/types/workout-log";
 import { createClient } from "@/lib/supabase/server";
-
-export { initialWorkoutLogActionState };
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";

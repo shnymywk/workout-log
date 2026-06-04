@@ -6,10 +6,6 @@ import { theme } from "@/lib/styles/theme";
 
 jest.mock("@/features/workouts/actions/workout-logs", () => ({
   deleteWorkoutLog: jest.fn(),
-  initialWorkoutLogActionState: {
-    error: null,
-    success: null
-  },
   updateWorkoutLog: jest.fn()
 }));
 

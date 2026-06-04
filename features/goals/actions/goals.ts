@@ -3,10 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { goalFormSchema } from "@/features/goals/schemas/goal-schema";
-import { initialGoalActionState, type GoalActionState } from "@/features/goals/types/goal";
+import type { GoalActionState } from "@/features/goals/types/goal";
 import { createClient } from "@/lib/supabase/server";
-
-export { initialGoalActionState };
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";
