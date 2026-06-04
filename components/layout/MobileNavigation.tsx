@@ -14,8 +14,8 @@ const MobileHeader = styled.header`
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(20, 32, 29, 0.1);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: saturate(180%) blur(20px);
 
   @media (min-width: 1024px) {
@@ -35,10 +35,10 @@ const MobileHeaderInner = styled.div`
 
 const Brand = styled(Link)`
   min-width: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -72,17 +72,21 @@ const MobileLink = styled(Link)<{ $active: boolean }>`
   min-height: 2.75rem;
   align-items: center;
   border: 1px solid
-    ${({ theme, $active }) => ($active ? theme.colors.textPrimary : theme.colors.border)};
+    ${({ $active }) => ($active ? "rgba(24, 124, 112, 0.28)" : "rgba(20, 32, 29, 0.1)")};
   border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme, $active }) => ($active ? theme.colors.textPrimary : "transparent")};
-  color: ${({ theme, $active }) => ($active ? theme.colors.textOnDark : theme.colors.textPrimary)};
+  background: ${({ $active }) => ($active ? "#187c70" : "#ffffff")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#101816")};
   padding: 0.5rem 1rem;
   scroll-snap-align: start;
   font-size: ${({ theme }) => theme.fontSizes.caption};
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 
   &:hover {
+    background: ${({ $active }) => ($active ? "#104b44" : "#edf6f4")};
     text-decoration: none;
   }
 `;

@@ -14,11 +14,11 @@ type AppShellProps = {
 
 const Shell = styled.div`
   min-height: 100vh;
-  background: ${({ theme }) => theme.colors.backgroundElevated};
+  background: #f3f6f5;
 
   @media (min-width: 1024px) {
     display: grid;
-    grid-template-columns: 16.5rem minmax(0, 1fr);
+    grid-template-columns: 17.5rem minmax(0, 1fr);
   }
 `;
 
@@ -33,7 +33,7 @@ const MainInner = styled.div`
 
   @media (min-width: 1024px) {
     width: min(100% - 4rem, ${({ theme }) => theme.layout.contentMaxWidth});
-    padding: ${({ theme }) => theme.space[10]} 0 ${({ theme }) => theme.space[16]};
+    padding: ${({ theme }) => theme.space[8]} 0 ${({ theme }) => theme.space[16]};
   }
 `;
 
