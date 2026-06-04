@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 
 import {
   Card,
@@ -45,7 +45,7 @@ type TooltipContentProps = {
 
 const ChartStack = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.space[5]};
+  gap: ${({ theme }) => theme.space[6]};
 `;
 
 const ChartGrid = styled.section`
@@ -76,26 +76,46 @@ const ChartFrame = styled.div`
   }
 `;
 
+const ChartCard = styled(Card)`
+  border-color: rgba(20, 32, 29, 0.1);
+  background: #ffffff;
+  box-shadow: rgba(12, 28, 24, 0.05) 0 16px 40px;
+`;
+
+const ChartCardHeader = styled(CardHeader)`
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const ChartCardTitle = styled(CardTitle)`
+  color: #101816;
+  font-size: 1rem;
+  font-weight: 700;
+`;
+
+const ChartCardDescription = styled(CardDescription)`
+  color: #66726f;
+`;
+
 const TooltipBox = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.space[1]};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid rgba(20, 32, 29, 0.1);
   border-radius: ${({ theme }) => theme.radii.control};
-  background: ${({ theme }) => theme.colors.background};
-  box-shadow: ${({ theme }) => theme.shadows.card};
+  background: #ffffff;
+  box-shadow: rgba(12, 28, 24, 0.12) 0 16px 40px;
   padding: ${({ theme }) => theme.space[3]};
 `;
 
 const TooltipLabel = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #101816;
   font-size: ${({ theme }) => theme.fontSizes.caption};
-  font-weight: 600;
+  font-weight: 700;
 `;
 
 const TooltipValue = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #55615e;
   font-size: ${({ theme }) => theme.fontSizes.caption};
 `;
 
@@ -120,18 +140,21 @@ function ChartEmptyState() {
   return <EmptyState>表示できるトレーニング記録がありません。</EmptyState>;
 }
 
-function FrequencyChart({ data }: { data: DailyCountPoint[] }) {
-  const theme = useTheme();
+const gridColor = "rgba(20, 32, 29, 0.1)";
+const tickColor = "#66726f";
+const teal = "#187c70";
+const blue = "#265e9b";
 
+function FrequencyChart({ data }: { data: DailyCountPoint[] }) {
   return (
     <ChartFrame>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
-          <CartesianGrid stroke={theme.colors.border} vertical={false} />
-          <XAxis dataKey="label" stroke={theme.colors.textSecondary} tickLine={false} />
-          <YAxis allowDecimals={false} stroke={theme.colors.textSecondary} tickLine={false} />
+          <CartesianGrid stroke={gridColor} vertical={false} />
+          <XAxis dataKey="label" stroke={tickColor} tickLine={false} />
+          <YAxis allowDecimals={false} stroke={tickColor} tickLine={false} />
           <Tooltip content={<DashboardTooltip />} />
-          <Bar dataKey="count" fill={theme.colors.appleBlue} name="記録数" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="count" fill={teal} name="記録数" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </ChartFrame>
@@ -139,21 +162,19 @@ function FrequencyChart({ data }: { data: DailyCountPoint[] }) {
 }
 
 function VolumeChart({ data }: { data: DailyVolumePoint[] }) {
-  const theme = useTheme();
-
   return (
     <ChartFrame>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid stroke={theme.colors.border} vertical={false} />
-          <XAxis dataKey="label" stroke={theme.colors.textSecondary} tickLine={false} />
-          <YAxis stroke={theme.colors.textSecondary} tickLine={false} />
+          <CartesianGrid stroke={gridColor} vertical={false} />
+          <XAxis dataKey="label" stroke={tickColor} tickLine={false} />
+          <YAxis stroke={tickColor} tickLine={false} />
           <Tooltip content={<DashboardTooltip />} />
           <Line
             dataKey="volume"
             dot={false}
             name="ボリューム"
-            stroke={theme.colors.linkBlue}
+            stroke={blue}
             strokeWidth={3}
             type="monotone"
           />
@@ -164,21 +185,19 @@ function VolumeChart({ data }: { data: DailyVolumePoint[] }) {
 }
 
 function WeightChart({ data }: { data: ExerciseWeightPoint[] }) {
-  const theme = useTheme();
-
   return (
     <ChartFrame>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
-          <CartesianGrid stroke={theme.colors.border} vertical={false} />
-          <XAxis dataKey="label" stroke={theme.colors.textSecondary} tickLine={false} />
-          <YAxis stroke={theme.colors.textSecondary} tickLine={false} />
+          <CartesianGrid stroke={gridColor} vertical={false} />
+          <XAxis dataKey="label" stroke={tickColor} tickLine={false} />
+          <YAxis stroke={tickColor} tickLine={false} />
           <Tooltip content={<DashboardTooltip />} />
           <Line
             dataKey="weight"
-            dot={{ r: 3 }}
+            dot={{ fill: "#ffffff", r: 3, stroke: teal, strokeWidth: 2 }}
             name="重量"
-            stroke={theme.colors.appleBlue}
+            stroke={teal}
             strokeWidth={3}
             type="monotone"
           />
@@ -202,11 +221,11 @@ export function DashboardCharts({ charts }: DashboardChartsProps) {
   return (
     <ChartStack>
       <ChartGrid>
-        <Card>
-          <CardHeader>
-            <CardTitle>週間頻度</CardTitle>
-            <CardDescription>直近7日間の日別記録数</CardDescription>
-          </CardHeader>
+        <ChartCard>
+          <ChartCardHeader>
+            <ChartCardTitle>週間頻度</ChartCardTitle>
+            <ChartCardDescription>直近7日間の日別記録数</ChartCardDescription>
+          </ChartCardHeader>
           <CardBody>
             {hasFrequencyData(charts.weeklyFrequencySeries) ? (
               <FrequencyChart data={charts.weeklyFrequencySeries} />
@@ -214,13 +233,13 @@ export function DashboardCharts({ charts }: DashboardChartsProps) {
               <ChartEmptyState />
             )}
           </CardBody>
-        </Card>
+        </ChartCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>月間頻度</CardTitle>
-            <CardDescription>直近30日間の日別記録数</CardDescription>
-          </CardHeader>
+        <ChartCard>
+          <ChartCardHeader>
+            <ChartCardTitle>月間頻度</ChartCardTitle>
+            <ChartCardDescription>直近30日間の日別記録数</ChartCardDescription>
+          </ChartCardHeader>
           <CardBody>
             {hasFrequencyData(charts.monthlyFrequencySeries) ? (
               <FrequencyChart data={charts.monthlyFrequencySeries} />
@@ -228,14 +247,14 @@ export function DashboardCharts({ charts }: DashboardChartsProps) {
               <ChartEmptyState />
             )}
           </CardBody>
-        </Card>
+        </ChartCard>
       </ChartGrid>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>総ボリューム推移</CardTitle>
-          <CardDescription>直近30日間の日別合計ボリューム</CardDescription>
-        </CardHeader>
+      <ChartCard>
+        <ChartCardHeader>
+          <ChartCardTitle>総ボリューム推移</ChartCardTitle>
+          <ChartCardDescription>直近30日間の日別合計ボリューム</ChartCardDescription>
+        </ChartCardHeader>
         <CardBody>
           {hasVolumeData(charts.volumeSeries) ? (
             <VolumeChart data={charts.volumeSeries} />
@@ -243,20 +262,20 @@ export function DashboardCharts({ charts }: DashboardChartsProps) {
             <ChartEmptyState />
           )}
         </CardBody>
-      </Card>
+      </ChartCard>
 
       <WeightGrid>
         {hasExerciseWeightSeries ? (
           charts.exerciseWeightSeries.map((series) => (
-            <Card key={series.exerciseId}>
-              <CardHeader>
-                <CardTitle>{series.exerciseName}</CardTitle>
-                <CardDescription>最新重量 {series.latestWeight}kg</CardDescription>
-              </CardHeader>
+            <ChartCard key={series.exerciseId}>
+              <ChartCardHeader>
+                <ChartCardTitle>{series.exerciseName}</ChartCardTitle>
+                <ChartCardDescription>最新重量 {series.latestWeight}kg</ChartCardDescription>
+              </ChartCardHeader>
               <CardBody>
                 <WeightChart data={series.points} />
               </CardBody>
-            </Card>
+            </ChartCard>
           ))
         ) : (
           <ChartEmptyState />
