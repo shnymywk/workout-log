@@ -9,6 +9,7 @@ import { MobileNavigation } from "@/components/layout/MobileNavigation";
 
 type AppShellProps = {
   children: ReactNode;
+  ownerEmail: string | null;
 };
 
 const Shell = styled.div`
@@ -36,12 +37,12 @@ const MainInner = styled.div`
   }
 `;
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, ownerEmail }: AppShellProps) {
   const pathname = usePathname();
 
   return (
     <Shell>
-      <DesktopSidebar pathname={pathname} />
+      <DesktopSidebar ownerEmail={ownerEmail} pathname={pathname} />
 
       <div>
         <MobileNavigation pathname={pathname} />
