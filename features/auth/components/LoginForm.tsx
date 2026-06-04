@@ -26,31 +26,59 @@ type LoginFormProps = {
 
 const Form = styled.form`
   display: grid;
-  gap: ${({ theme }) => theme.space[4]};
+  gap: ${({ theme }) => theme.space[5]};
+
+  input {
+    min-height: 3rem;
+    border-color: rgba(20, 32, 29, 0.14);
+    background: #f7faf9;
+  }
+
+  input:focus-visible {
+    border-color: #187c70;
+    box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
+  }
+
+  label {
+    color: #1b2321;
+  }
 `;
 
 const ModeTabs = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: ${({ theme }) => theme.space[2]};
+  gap: ${({ theme }) => theme.space[1]};
+  border: 1px solid rgba(20, 32, 29, 0.1);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: #f3f6f5;
+  padding: ${({ theme }) => theme.space[1]};
 `;
 
 const ModeButton = styled.button<{ $active: boolean }>`
-  min-height: 2.5rem;
-  border: 1px solid
-    ${({ theme, $active }) => ($active ? theme.colors.textPrimary : theme.colors.border)};
+  min-height: 2.75rem;
+  border: 1px solid ${({ $active }) => ($active ? "rgba(24, 124, 112, 0.22)" : "transparent")};
   border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme, $active }) => ($active ? theme.colors.textPrimary : "transparent")};
-  color: ${({ theme, $active }) => ($active ? theme.colors.textOnDark : theme.colors.textPrimary)};
+  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
+  color: ${({ $active }) => ($active ? "#187c70" : "#55615e")};
+  box-shadow: ${({ $active }) => ($active ? "rgba(12, 28, 24, 0.08) 0 8px 24px" : "none")};
   font-size: ${({ theme }) => theme.fontSizes.caption};
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+
+  &:hover {
+    background: ${({ $active }) => ($active ? "#ffffff" : "#edf6f4")};
+  }
 `;
 
 const HelperText = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: ${({ theme }) => theme.fontSizes.caption};
+  line-height: 1.5;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
@@ -64,19 +92,55 @@ const ErrorText = styled.p`
 
 const SuccessText = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.linkBlue};
+  color: #187c70;
   font-size: ${({ theme }) => theme.fontSizes.caption};
   font-weight: 600;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+`;
+
+const AuthCard = styled(Card)`
+  border-color: rgba(20, 32, 29, 0.1);
+  background: #ffffff;
+  box-shadow: rgba(12, 28, 24, 0.08) 0 24px 70px;
+  padding: ${({ theme }) => theme.space[5]};
+`;
+
+const AuthCardHeader = styled(CardHeader)`
+  gap: ${({ theme }) => theme.space[3]};
+  margin-bottom: ${({ theme }) => theme.space[6]};
+`;
+
+const AuthCardTitle = styled(CardTitle)`
+  color: #101816;
+  font-size: 1.5rem;
+  font-weight: 700;
+`;
+
+const AuthCardDescription = styled(CardDescription)`
+  color: #55615e;
+`;
+
+const AuthCardBody = styled(CardBody)`
+  gap: ${({ theme }) => theme.space[5]};
+`;
+
+const AuthSubmitButton = styled(Button)`
+  min-height: 3rem;
+  background: #187c70;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #104b44;
+  }
 `;
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={pending}>
+    <AuthSubmitButton type="submit" disabled={pending}>
       {pending ? pendingLabel : label}
-    </Button>
+    </AuthSubmitButton>
   );
 }
 
@@ -87,16 +151,16 @@ export function LoginForm({ initialMode = "login", nextPath = "/dashboard" }: Lo
   const isLoginMode = mode === "login";
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{isLoginMode ? "ログイン" : "新規登録"}</CardTitle>
-        <CardDescription>
+    <AuthCard>
+      <AuthCardHeader>
+        <AuthCardTitle>{isLoginMode ? "ログイン" : "新規登録"}</AuthCardTitle>
+        <AuthCardDescription>
           {isLoginMode
             ? "メールアドレスとパスワードでWorkout Logに入ります。"
             : "メールアドレスとパスワードでWorkout Logのアカウントを作成します。"}
-        </CardDescription>
-      </CardHeader>
-      <CardBody>
+        </AuthCardDescription>
+      </AuthCardHeader>
+      <AuthCardBody>
         <ModeTabs role="tablist" aria-label="認証モード">
           <ModeButton
             type="button"
@@ -161,7 +225,7 @@ export function LoginForm({ initialMode = "login", nextPath = "/dashboard" }: Lo
               : "メール確認が有効な場合は、確認メールのリンクから登録を完了します。"}
           </HelperText>
         </Form>
-      </CardBody>
-    </Card>
+      </AuthCardBody>
+    </AuthCard>
   );
 }
