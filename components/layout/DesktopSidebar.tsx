@@ -20,8 +20,8 @@ const Sidebar = styled.aside`
     display: flex;
     height: 100vh;
     flex-direction: column;
-    border-right: 1px solid ${({ theme }) => theme.colors.border};
-    background: rgba(255, 255, 255, 0.88);
+    border-right: 1px solid rgba(20, 32, 29, 0.1);
+    background: rgba(255, 255, 255, 0.92);
     padding: ${({ theme }) => theme.space[6]};
     backdrop-filter: saturate(180%) blur(20px);
   }
@@ -34,10 +34,10 @@ const SidebarHeader = styled.div`
 `;
 
 const Brand = styled(Link)`
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 
   &:hover {
@@ -47,7 +47,7 @@ const Brand = styled(Link)`
 
 const BrandCaption = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: ${({ theme }) => theme.fontSizes.caption};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
@@ -60,27 +60,32 @@ const SidebarNav = styled.nav`
 const SidebarLink = styled(Link)<{ $active: boolean }>`
   display: grid;
   gap: ${({ theme }) => theme.space[1]};
-  border: 1px solid ${({ theme, $active }) => ($active ? theme.colors.border : "transparent")};
+  border: 1px solid ${({ $active }) => ($active ? "rgba(24, 124, 112, 0.22)" : "transparent")};
   border-radius: ${({ theme }) => theme.radii.card};
-  background: ${({ theme, $active }) =>
-    $active ? theme.colors.backgroundElevated : "transparent"};
-  color: ${({ theme }) => theme.colors.textPrimary};
+  background: ${({ $active }) => ($active ? "#edf6f4" : "transparent")};
+  color: #101816;
   padding: ${({ theme }) => theme.space[3]} ${({ theme }) => theme.space[4]};
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.backgroundElevated};
+    border-color: rgba(24, 124, 112, 0.16);
+    background: #f3f6f5;
     text-decoration: none;
+    transform: translateY(-1px);
   }
 `;
 
 const SidebarLabel = styled.span`
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const SidebarDescription = styled.span`
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: 0.8125rem;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
@@ -94,19 +99,23 @@ const SidebarFooter = styled.div`
 const UserSummary = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.space[1]};
+  border: 1px solid rgba(20, 32, 29, 0.1);
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #f7faf9;
+  padding: ${({ theme }) => theme.space[4]};
 `;
 
 const UserName = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #101816;
   font-size: ${({ theme }) => theme.fontSizes.caption};
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const UserEmail = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: 0.8125rem;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
   overflow-wrap: anywhere;
