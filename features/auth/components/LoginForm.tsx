@@ -5,12 +5,8 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import {
-  initialLoginActionState,
-  initialSignUpActionState,
-  login,
-  signUp
-} from "@/features/auth/actions";
+import { initialLoginActionState, initialSignUpActionState } from "@/features/auth/action-state";
+import { login, signUp } from "@/features/auth/actions";
 import {
   Button,
   Card,

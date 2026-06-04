@@ -2,27 +2,8 @@
 
 import { redirect } from "next/navigation";
 
+import type { LoginActionState, SignUpActionState } from "@/features/auth/action-state";
 import { createClient } from "@/lib/supabase/server";
-
-export type LoginActionState = {
-  error: string | null;
-};
-
-export type SignUpActionState = {
-  error: string | null;
-  success: string | null;
-};
-
-const initialLoginActionState: LoginActionState = {
-  error: null
-};
-
-const initialSignUpActionState: SignUpActionState = {
-  error: null,
-  success: null
-};
-
-export { initialLoginActionState, initialSignUpActionState };
 
 function getSafeRedirectPath(value: FormDataEntryValue | null) {
   const path = String(value ?? "");

@@ -6,13 +6,6 @@ import { LoginForm } from "@/features/auth/components/LoginForm";
 import { theme } from "@/lib/styles/theme";
 
 jest.mock("@/features/auth/actions", () => ({
-  initialLoginActionState: {
-    error: null
-  },
-  initialSignUpActionState: {
-    error: null,
-    success: null
-  },
   login: jest.fn(),
   signUp: jest.fn()
 }));
