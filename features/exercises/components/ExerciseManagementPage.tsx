@@ -65,6 +65,14 @@ export function ExerciseManagementPage({
       <Stack>
         <Section>
           <SectionHeader>
+            <SectionTitle>部位管理</SectionTitle>
+            <SectionDescription>種目分類に使う部位を追加・編集します。</SectionDescription>
+          </SectionHeader>
+          <BodyPartManager bodyParts={bodyParts} fetchError={bodyPartsError} />
+        </Section>
+
+        <Section>
+          <SectionHeader>
             <SectionTitle>種目管理</SectionTitle>
             <SectionDescription>種目名を部位と紐づけて管理します。</SectionDescription>
           </SectionHeader>
@@ -74,14 +82,6 @@ export function ExerciseManagementPage({
             fetchError={exercisesError}
             selectedBodyPartId={selectedBodyPartId}
           />
-        </Section>
-
-        <Section>
-          <SectionHeader>
-            <SectionTitle>部位管理</SectionTitle>
-            <SectionDescription>種目分類に使う部位を追加・編集します。</SectionDescription>
-          </SectionHeader>
-          <BodyPartManager bodyParts={bodyParts} fetchError={bodyPartsError} />
         </Section>
       </Stack>
     </>
