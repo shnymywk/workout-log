@@ -7,6 +7,7 @@ import { appNavigationItems } from "@/components/layout/navigation";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 
 type DesktopSidebarProps = {
+  ownerEmail: string | null;
   pathname: string;
 };
 
@@ -108,13 +109,14 @@ const UserEmail = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 0.8125rem;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  overflow-wrap: anywhere;
 `;
 
 function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function DesktopSidebar({ pathname }: DesktopSidebarProps) {
+export function DesktopSidebar({ ownerEmail, pathname }: DesktopSidebarProps) {
   return (
     <Sidebar aria-label="アプリナビゲーション">
       <SidebarHeader>
@@ -134,7 +136,7 @@ export function DesktopSidebar({ pathname }: DesktopSidebarProps) {
       <SidebarFooter>
         <UserSummary>
           <UserName>Shunya Miyawaki</UserName>
-          <UserEmail>sample@example.com</UserEmail>
+          <UserEmail>{ownerEmail ?? "メールアドレス未取得"}</UserEmail>
         </UserSummary>
         <LogoutButton />
       </SidebarFooter>
