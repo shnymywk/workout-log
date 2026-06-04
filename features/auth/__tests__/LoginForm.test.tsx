@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ThemeProvider } from "styled-components";
 
 import { LoginForm } from "@/features/auth/components/LoginForm";
@@ -8,7 +9,12 @@ jest.mock("@/features/auth/actions", () => ({
   initialLoginActionState: {
     error: null
   },
-  login: jest.fn()
+  initialSignUpActionState: {
+    error: null,
+    success: null
+  },
+  login: jest.fn(),
+  signUp: jest.fn()
 }));
 
 describe("LoginForm", () => {
@@ -24,5 +30,23 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ログイン" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("/workouts")).toBeInTheDocument();
+  });
+
+  it("switches to sign up mode", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ThemeProvider theme={theme}>
+        <LoginForm nextPath="/dashboard" />
+      </ThemeProvider>
+    );
+
+    await user.click(screen.getByRole("tab", { name: "新規登録" }));
+
+    expect(screen.getByRole("heading", { name: "新規登録" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "登録する" })).toBeInTheDocument();
+    expect(
+      screen.getByText("メール確認が有効な場合は、確認メールのリンクから登録を完了します。")
+    ).toBeInTheDocument();
   });
 });
