@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 import {
@@ -16,6 +17,7 @@ import {
   Select,
   Textarea
 } from "@/components/primitives";
+import { createClient } from "@/lib/supabase/client";
 
 const Page = styled.main`
   min-height: 100vh;
@@ -177,12 +179,31 @@ const stats = [
 ];
 
 export default function HomePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const supabase = createClient();
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) {
+        setIsAuthenticated(data.session !== null);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <Page>
       <Header>
         <HeaderInner>
           <Brand>Workout Log</Brand>
-          <LoginLink href="/login">ログイン</LoginLink>
+          <LoginLink href={isAuthenticated ? "/dashboard" : "/login"}>
+            {isAuthenticated ? "ダッシュボード" : "ログイン"}
+          </LoginLink>
         </HeaderInner>
       </Header>
 
