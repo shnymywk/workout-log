@@ -1,84 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import styled from "styled-components";
-
-import {
-  Button,
-  Card,
-  CardBody,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Field,
-  Input,
-  Label,
-  Select,
-  Textarea
-} from "@/components/primitives";
-import { createClient } from "@/lib/supabase/client";
 
 const Page = styled.main`
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.backgroundElevated};
 `;
 
-const Header = styled.header`
-  background: rgba(255, 255, 255, 0.86);
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  backdrop-filter: saturate(180%) blur(20px);
-`;
-
-const HeaderInner = styled.div`
-  display: flex;
-  min-height: 3.5rem;
-  width: min(100% - 2rem, ${({ theme }) => theme.layout.contentMaxWidth});
-  align-items: center;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[4]};
-  margin: 0 auto;
-`;
-
-const Brand = styled.p`
-  margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-`;
-
-const LoginLink = styled(Link)`
-  display: inline-flex;
-  min-height: 2.75rem;
-  min-width: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  color: ${({ theme }) => theme.colors.linkBlue};
-  padding: 0.625rem 1.375rem;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-  transition:
-    background-color 160ms ease,
-    transform 160ms ease;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.backgroundElevated};
-    text-decoration: none;
-    transform: translateY(-1px);
-  }
-`;
-
 const Content = styled.div`
   display: grid;
   width: min(100% - 2rem, ${({ theme }) => theme.layout.contentMaxWidth});
-  gap: ${({ theme }) => theme.space[8]};
+  min-height: 100vh;
+  align-content: center;
+  gap: ${({ theme }) => theme.space[6]};
   margin: 0 auto;
-  padding: clamp(2rem, 5vw, 4rem) 0;
+  padding: clamp(3rem, 8vw, 6rem) 0;
 `;
 
 const Hero = styled.section`
@@ -114,99 +51,44 @@ const Lead = styled.p`
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
-const Grid = styled.section`
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
-  gap: ${({ theme }) => theme.space[6]};
-
-  @media (max-width: 833px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const StatGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: ${({ theme }) => theme.space[4]};
-
-  @media (max-width: 833px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const StatValue = styled.p`
-  margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 2rem;
-  font-weight: 600;
-  line-height: ${({ theme }) => theme.lineHeights.heading};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-`;
-
-const StatLabel = styled.p`
-  margin: ${({ theme }) => theme.space[1]} 0 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.fontSizes.caption};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-`;
-
-const Form = styled.form`
-  display: grid;
-  gap: ${({ theme }) => theme.space[4]};
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: ${({ theme }) => theme.space[3]};
-
-  @media (max-width: 833px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Actions = styled.div`
+const AuthActions = styled.div`
   display: flex;
-  justify-content: flex-end;
-  padding-top: ${({ theme }) => theme.space[2]};
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.space[3]};
 `;
 
-const stats = [
-  { label: "今週の回数", value: "3回" },
-  { label: "総ボリューム", value: "12,480kg" },
-  { label: "目標達成率", value: "82%" }
-];
+const AuthLink = styled(Link)<{ $variant?: "primary" | "secondary" }>`
+  display: inline-flex;
+  min-height: 2.75rem;
+  min-width: 8rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid
+    ${({ theme, $variant }) => ($variant === "secondary" ? theme.colors.appleBlue : "transparent")};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme, $variant }) =>
+    $variant === "secondary" ? "transparent" : theme.colors.appleBlue};
+  color: ${({ theme, $variant }) => ($variant === "secondary" ? theme.colors.appleBlue : "#fff")};
+  padding: 0.625rem 1.375rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    background: ${({ theme, $variant }) =>
+      $variant === "secondary" ? "rgba(0, 113, 227, 0.08)" : theme.colors.linkBlue};
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+`;
 
 export default function HomePage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    const supabase = createClient();
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (active) {
-        setIsAuthenticated(data.session !== null);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
     <Page>
-      <Header>
-        <HeaderInner>
-          <Brand>Workout Log</Brand>
-          <LoginLink href={isAuthenticated ? "/dashboard" : "/login"}>
-            {isAuthenticated ? "ダッシュボード" : "ログイン"}
-          </LoginLink>
-        </HeaderInner>
-      </Header>
-
       <Content>
         <Hero>
           <Eyebrow>Training Dashboard</Eyebrow>
@@ -214,67 +96,12 @@ export default function HomePage() {
           <Lead>前回の重量、今週の頻度、目標までの距離をひとつの画面で確認できます。</Lead>
         </Hero>
 
-        <Grid>
-          <Card>
-            <CardHeader>
-              <CardTitle>今日の記録</CardTitle>
-              <CardDescription>2026年6月3日</CardDescription>
-            </CardHeader>
-            <CardBody>
-              <Form>
-                <Field>
-                  <Label htmlFor="exercise">種目</Label>
-                  <Select id="exercise" defaultValue="bench-press">
-                    <option value="bench-press">ベンチプレス</option>
-                    <option value="squat">スクワット</option>
-                    <option value="deadlift">デッドリフト</option>
-                  </Select>
-                </Field>
-
-                <FormRow>
-                  <Field>
-                    <Label htmlFor="weight">重量</Label>
-                    <Input id="weight" inputMode="decimal" defaultValue="70" />
-                  </Field>
-                  <Field>
-                    <Label htmlFor="sets">セット</Label>
-                    <Input id="sets" inputMode="numeric" defaultValue="3" />
-                  </Field>
-                  <Field>
-                    <Label htmlFor="reps">回数</Label>
-                    <Input id="reps" inputMode="numeric" defaultValue="8" />
-                  </Field>
-                </FormRow>
-
-                <Field>
-                  <Label htmlFor="memo">メモ</Label>
-                  <Textarea id="memo" defaultValue="フォームは安定。次回は72.5kgを試す。" />
-                </Field>
-
-                <Actions>
-                  <Button>記録する</Button>
-                </Actions>
-              </Form>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>サマリー</CardTitle>
-              <CardDescription>直近7日間</CardDescription>
-            </CardHeader>
-            <CardBody>
-              <StatGrid>
-                {stats.map((stat) => (
-                  <div key={stat.label}>
-                    <StatValue>{stat.value}</StatValue>
-                    <StatLabel>{stat.label}</StatLabel>
-                  </div>
-                ))}
-              </StatGrid>
-            </CardBody>
-          </Card>
-        </Grid>
+        <AuthActions aria-label="認証メニュー">
+          <AuthLink href="/login">ログイン</AuthLink>
+          <AuthLink href="/login?mode=signUp" $variant="secondary">
+            新規登録
+          </AuthLink>
+        </AuthActions>
       </Content>
     </Page>
   );

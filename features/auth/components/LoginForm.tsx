@@ -20,6 +20,7 @@ import {
 } from "@/components/primitives";
 
 type LoginFormProps = {
+  initialMode?: "login" | "signUp";
   nextPath?: string;
 };
 
@@ -79,8 +80,8 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
   );
 }
 
-export function LoginForm({ nextPath = "/dashboard" }: LoginFormProps) {
-  const [mode, setMode] = useState<"login" | "signUp">("login");
+export function LoginForm({ initialMode = "login", nextPath = "/dashboard" }: LoginFormProps) {
+  const [mode, setMode] = useState<"login" | "signUp">(initialMode);
   const [loginState, loginFormAction] = useActionState(login, initialLoginActionState);
   const [signUpState, signUpFormAction] = useActionState(signUp, initialSignUpActionState);
   const isLoginMode = mode === "login";
