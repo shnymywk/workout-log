@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
@@ -16,6 +17,12 @@ import {
 type WorkoutLogListProps = {
   exercises: Exercise[];
   workoutLogs: WorkoutLog[];
+};
+
+type EditableSet = {
+  id: string;
+  weight: string;
+  reps: string;
 };
 
 const List = styled.div`
@@ -94,16 +101,38 @@ const EditForm = styled.form`
 
 const EditGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: ${({ theme }) => theme.space[3]};
-
-  @media (max-width: 1023px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 
   @media (max-width: 833px) {
     grid-template-columns: 1fr;
   }
+`;
+
+const SetRows = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const SetRow = styled.div`
+  display: grid;
+  grid-template-columns: 2rem repeat(2, minmax(0, 1fr)) auto;
+  gap: ${({ theme }) => theme.space[2]};
+  align-items: end;
+
+  @media (max-width: 833px) {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+  }
+`;
+
+const SetNumber = styled.span`
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  color: #66726f;
+  font-family: ${({ theme }) => theme.fonts.display};
+  font-weight: 700;
 `;
 
 const RowActions = styled.div`
@@ -144,6 +173,20 @@ const DeleteActionButton = styled(Button)`
   }
 `;
 
+const AddActionButton = styled(Button)`
+  border-color: rgba(24, 124, 112, 0.32);
+  color: #187c70;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #edf6f4;
+  }
+`;
+
+const DeleteIconActionButton = styled(DeleteActionButton)`
+  padding: 0.625rem;
+`;
+
 function SaveButton({ formId, pending }: { formId: string; pending: boolean }) {
   return (
     <SaveActionButton type="submit" variant="secondary" form={formId} disabled={pending}>
@@ -162,6 +205,37 @@ function DeleteButton() {
   );
 }
 
+function formatWeight(weight: number) {
+  return Number.isInteger(weight) ? weight.toString() : weight.toFixed(2).replace(/0+$/, "");
+}
+
+function buildEditableSets(workoutLog: WorkoutLog): EditableSet[] {
+  if (workoutLog.workout_log_sets && workoutLog.workout_log_sets.length > 0) {
+    return [...workoutLog.workout_log_sets]
+      .sort((firstSet, secondSet) => firstSet.set_number - secondSet.set_number)
+      .map((set) => ({
+        id: set.id,
+        weight: set.weight.toString(),
+        reps: set.reps.toString()
+      }));
+  }
+
+  return Array.from({ length: workoutLog.sets }, (_, index) => ({
+    id: `${workoutLog.id}-set-${index + 1}`,
+    weight: workoutLog.weight.toString(),
+    reps: workoutLog.reps.toString()
+  }));
+}
+
+function formatSetSummary(setDetails: EditableSet[]) {
+  return setDetails
+    .map(
+      (setDetail, index) =>
+        `${index + 1}set ${formatWeight(Number(setDetail.weight))}kg x ${setDetail.reps}rep`
+    )
+    .join(" / ");
+}
+
 function WorkoutLogRow({
   exercises,
   workoutLog
@@ -173,8 +247,52 @@ function WorkoutLogRow({
     updateWorkoutLog,
     initialWorkoutLogActionState
   );
+  const [setDetails, setSetDetails] = useState<EditableSet[]>(() => buildEditableSets(workoutLog));
   const editFormId = `${workoutLog.id}-edit-form`;
-  const volume = calculateWorkoutLogVolume(workoutLog);
+  const serializedSetDetails = useMemo(
+    () =>
+      JSON.stringify(
+        setDetails.map((setDetail) => ({
+          weight: setDetail.weight,
+          reps: setDetail.reps
+        }))
+      ),
+    [setDetails]
+  );
+  const volume = calculateWorkoutLogVolume({
+    ...workoutLog,
+    workout_log_sets: setDetails.map((setDetail, index) => ({
+      id: setDetail.id,
+      set_number: index + 1,
+      weight: Number(setDetail.weight),
+      reps: Number(setDetail.reps)
+    }))
+  });
+
+  function updateSet(setId: string, nextValues: Partial<EditableSet>) {
+    setSetDetails((currentSetDetails) =>
+      currentSetDetails.map((setDetail) =>
+        setDetail.id === setId ? { ...setDetail, ...nextValues } : setDetail
+      )
+    );
+  }
+
+  function addSet() {
+    setSetDetails((currentSetDetails) => [
+      ...currentSetDetails,
+      {
+        id: `${workoutLog.id}-set-${Date.now()}-${currentSetDetails.length + 1}`,
+        weight: "0",
+        reps: "0"
+      }
+    ]);
+  }
+
+  function removeSet(setId: string) {
+    setSetDetails((currentSetDetails) =>
+      currentSetDetails.filter((setDetail) => setDetail.id !== setId)
+    );
+  }
 
   return (
     <Row>
@@ -182,8 +300,7 @@ function WorkoutLogRow({
         <div>
           <SummaryTitle>{workoutLog.exercise_name}</SummaryTitle>
           <SummaryMeta>
-            {workoutLog.trained_at} / {workoutLog.weight}kg x {workoutLog.sets}set x{" "}
-            {workoutLog.reps}rep
+            {workoutLog.trained_at} / {formatSetSummary(setDetails)}
           </SummaryMeta>
         </div>
         <Volume>{volume.toLocaleString()}kg</Volume>
@@ -191,6 +308,7 @@ function WorkoutLogRow({
 
       <EditForm id={editFormId} action={formAction}>
         <input type="hidden" name="id" value={workoutLog.id} />
+        <input type="hidden" name="setDetails" value={serializedSetDetails} />
         <EditGrid>
           <Field>
             <Label htmlFor={`${workoutLog.id}-trained-at`}>日付</Label>
@@ -215,34 +333,48 @@ function WorkoutLogRow({
               ))}
             </Select>
           </Field>
-          <Field>
-            <Label htmlFor={`${workoutLog.id}-weight`}>重量</Label>
-            <Input
-              id={`${workoutLog.id}-weight`}
-              name="weight"
-              inputMode="decimal"
-              defaultValue={workoutLog.weight}
-            />
-          </Field>
-          <Field>
-            <Label htmlFor={`${workoutLog.id}-sets`}>セット</Label>
-            <Input
-              id={`${workoutLog.id}-sets`}
-              name="sets"
-              inputMode="numeric"
-              defaultValue={workoutLog.sets}
-            />
-          </Field>
-          <Field>
-            <Label htmlFor={`${workoutLog.id}-reps`}>回数</Label>
-            <Input
-              id={`${workoutLog.id}-reps`}
-              name="reps"
-              inputMode="numeric"
-              defaultValue={workoutLog.reps}
-            />
-          </Field>
         </EditGrid>
+        <SetRows>
+          {setDetails.map((setDetail, index) => (
+            <SetRow key={setDetail.id}>
+              <SetNumber>{index + 1}</SetNumber>
+              <Field>
+                <Label htmlFor={`${setDetail.id}-weight`}>重量</Label>
+                <Input
+                  id={`${setDetail.id}-weight`}
+                  inputMode="decimal"
+                  value={setDetail.weight}
+                  onChange={(event) => updateSet(setDetail.id, { weight: event.target.value })}
+                />
+              </Field>
+              <Field>
+                <Label htmlFor={`${setDetail.id}-reps`}>回数</Label>
+                <Input
+                  id={`${setDetail.id}-reps`}
+                  inputMode="numeric"
+                  value={setDetail.reps}
+                  onChange={(event) => updateSet(setDetail.id, { reps: event.target.value })}
+                />
+              </Field>
+              <DeleteIconActionButton
+                type="button"
+                variant="ghost"
+                aria-label={`${workoutLog.exercise_name}のセット${index + 1}を削除`}
+                title={`${workoutLog.exercise_name}のセット${index + 1}を削除`}
+                disabled={setDetails.length === 1}
+                onClick={() => removeSet(setDetail.id)}
+              >
+                <Trash2 aria-hidden="true" size={18} />
+              </DeleteIconActionButton>
+            </SetRow>
+          ))}
+        </SetRows>
+        <RowActions>
+          <AddActionButton type="button" variant="secondary" onClick={addSet}>
+            <Plus aria-hidden="true" size={18} />
+            セット追加
+          </AddActionButton>
+        </RowActions>
         <Field>
           <Label htmlFor={`${workoutLog.id}-memo`}>メモ</Label>
           <Textarea id={`${workoutLog.id}-memo`} name="memo" defaultValue={workoutLog.memo ?? ""} />
