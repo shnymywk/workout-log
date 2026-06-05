@@ -18,6 +18,12 @@ type WorkoutLogRow = {
   exercises: {
     name: string;
   } | null;
+  workout_log_sets: {
+    id: string;
+    set_number: number;
+    weight: number;
+    reps: number;
+  }[];
 };
 
 export async function getWorkoutLogs(filters: WorkoutLogFilters = {}): Promise<WorkoutLogsResult> {
@@ -36,6 +42,12 @@ export async function getWorkoutLogs(filters: WorkoutLogFilters = {}): Promise<W
         created_at,
         exercises (
           name
+        ),
+        workout_log_sets (
+          id,
+          set_number,
+          weight,
+          reps
         )
       `
     )
@@ -69,7 +81,10 @@ export async function getWorkoutLogs(filters: WorkoutLogFilters = {}): Promise<W
       reps: workoutLog.reps,
       memo: workoutLog.memo,
       created_at: workoutLog.created_at,
-      exercise_name: workoutLog.exercises?.name ?? "未設定の種目"
+      exercise_name: workoutLog.exercises?.name ?? "未設定の種目",
+      workout_log_sets: workoutLog.workout_log_sets.sort(
+        (firstSet, secondSet) => firstSet.set_number - secondSet.set_number
+      )
     })),
     error: null
   };

@@ -1,10 +1,15 @@
 "use server";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 import { workoutLogFormSchema } from "@/features/workouts/schemas/workout-log-schema";
 import type { WorkoutLogActionState } from "@/features/workouts/types/workout-log";
 import { createClient } from "@/lib/supabase/server";
+import type { Database, TablesInsert } from "@/types/database";
+
+type Supabase = SupabaseClient<Database>;
+type WorkoutLogSetInsert = TablesInsert<"workout_log_sets">;
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";
@@ -26,6 +31,100 @@ function mapWorkoutLogMutationError(error: { code?: string }) {
   }
 
   return "トレーニング記録を保存できませんでした。";
+}
+
+function buildWorkoutLogSetRows({
+  reps,
+  sets,
+  userId,
+  weight,
+  workoutLogId
+}: {
+  reps: number;
+  sets: number;
+  userId: string;
+  weight: number;
+  workoutLogId: string;
+}): WorkoutLogSetInsert[] {
+  return Array.from({ length: sets }, (_, index) => ({
+    workout_log_id: workoutLogId,
+    user_id: userId,
+    set_number: index + 1,
+    weight,
+    reps
+  }));
+}
+
+async function createWorkoutLogSets({
+  reps,
+  sets,
+  supabase,
+  userId,
+  weight,
+  workoutLogId
+}: {
+  reps: number;
+  sets: number;
+  supabase: Supabase;
+  userId: string;
+  weight: number;
+  workoutLogId: string;
+}) {
+  return supabase.from("workout_log_sets").insert(
+    buildWorkoutLogSetRows({
+      reps,
+      sets,
+      userId,
+      weight,
+      workoutLogId
+    })
+  );
+}
+
+async function syncWorkoutLogSets({
+  reps,
+  sets,
+  supabase,
+  userId,
+  weight,
+  workoutLogId
+}: {
+  reps: number;
+  sets: number;
+  supabase: Supabase;
+  userId: string;
+  weight: number;
+  workoutLogId: string;
+}) {
+  const { error: upsertError } = await supabase.from("workout_log_sets").upsert(
+    buildWorkoutLogSetRows({
+      reps,
+      sets,
+      userId,
+      weight,
+      workoutLogId
+    }),
+    { onConflict: "workout_log_id,set_number" }
+  );
+
+  if (upsertError) {
+    return upsertError;
+  }
+
+  const { error: deleteError } = await supabase
+    .from("workout_log_sets")
+    .delete()
+    .eq("workout_log_id", workoutLogId)
+    .eq("user_id", userId)
+    .gt("set_number", sets);
+
+  return deleteError;
+}
+
+function revalidateWorkoutLogPages() {
+  revalidatePath("/workouts");
+  revalidatePath("/dashboard");
+  revalidatePath("/goals");
 }
 
 export async function createWorkoutLog(
@@ -58,15 +157,19 @@ export async function createWorkoutLog(
     };
   }
 
-  const { error } = await supabase.from("workout_logs").insert({
-    exercise_id: parsed.data.exerciseId,
-    trained_at: parsed.data.trainedAt,
-    weight: parsed.data.weight,
-    sets: parsed.data.sets,
-    reps: parsed.data.reps,
-    memo: parsed.data.memo,
-    user_id: userData.user.id
-  });
+  const { data: workoutLog, error } = await supabase
+    .from("workout_logs")
+    .insert({
+      exercise_id: parsed.data.exerciseId,
+      trained_at: parsed.data.trainedAt,
+      weight: parsed.data.weight,
+      sets: parsed.data.sets,
+      reps: parsed.data.reps,
+      memo: parsed.data.memo,
+      user_id: userData.user.id
+    })
+    .select("id")
+    .single();
 
   if (error) {
     console.error("Failed to create workout log", error);
@@ -77,7 +180,30 @@ export async function createWorkoutLog(
     };
   }
 
-  revalidatePath("/workouts");
+  const { error: workoutLogSetsError } = await createWorkoutLogSets({
+    reps: parsed.data.reps,
+    sets: parsed.data.sets,
+    supabase,
+    userId: userData.user.id,
+    weight: parsed.data.weight,
+    workoutLogId: workoutLog.id
+  });
+
+  if (workoutLogSetsError) {
+    console.error("Failed to create workout log sets", workoutLogSetsError);
+    await supabase
+      .from("workout_logs")
+      .delete()
+      .eq("id", workoutLog.id)
+      .eq("user_id", userData.user.id);
+
+    return {
+      error: mapWorkoutLogMutationError(workoutLogSetsError),
+      success: null
+    };
+  }
+
+  revalidateWorkoutLogPages();
 
   return {
     error: null,
@@ -147,7 +273,25 @@ export async function updateWorkoutLog(
     };
   }
 
-  revalidatePath("/workouts");
+  const workoutLogSetsError = await syncWorkoutLogSets({
+    reps: parsed.data.reps,
+    sets: parsed.data.sets,
+    supabase,
+    userId: userData.user.id,
+    weight: parsed.data.weight,
+    workoutLogId: id
+  });
+
+  if (workoutLogSetsError) {
+    console.error("Failed to update workout log sets", workoutLogSetsError);
+
+    return {
+      error: mapWorkoutLogMutationError(workoutLogSetsError),
+      success: null
+    };
+  }
+
+  revalidateWorkoutLogPages();
 
   return {
     error: null,
@@ -171,5 +315,5 @@ export async function deleteWorkoutLog(formData: FormData) {
 
   await supabase.from("workout_logs").delete().eq("id", id).eq("user_id", userData.user.id);
 
-  revalidatePath("/workouts");
+  revalidateWorkoutLogPages();
 }

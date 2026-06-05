@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import { deleteWorkoutLog, updateWorkoutLog } from "@/features/workouts/actions/workout-logs";
-import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
+import { calculateWorkoutLogVolume } from "@/features/workouts/lib/volume";
 import {
   initialWorkoutLogActionState,
   type WorkoutLog
@@ -174,7 +174,7 @@ function WorkoutLogRow({
     initialWorkoutLogActionState
   );
   const editFormId = `${workoutLog.id}-edit-form`;
-  const volume = calculateWorkoutVolume(workoutLog.weight, workoutLog.sets, workoutLog.reps);
+  const volume = calculateWorkoutLogVolume(workoutLog);
 
   return (
     <Row>

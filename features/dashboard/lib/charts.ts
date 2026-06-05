@@ -1,4 +1,4 @@
-import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
+import { calculateWorkoutLogVolume } from "@/features/workouts/lib/volume";
 import type { WorkoutLog } from "@/features/workouts/types/workout-log";
 
 export type ExerciseWeightPoint = {
@@ -112,8 +112,7 @@ function buildDailyVolumeSeries(workoutLogs: WorkoutLog[], today: Date, days: nu
   workoutLogs.forEach((workoutLog) => {
     volumeByDate.set(
       workoutLog.trained_at,
-      (volumeByDate.get(workoutLog.trained_at) ?? 0) +
-        calculateWorkoutVolume(workoutLog.weight, workoutLog.sets, workoutLog.reps)
+      (volumeByDate.get(workoutLog.trained_at) ?? 0) + calculateWorkoutLogVolume(workoutLog)
     );
   });
 
