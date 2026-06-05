@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Activity } from "lucide-react";
 import styled from "styled-components";
 
 import { appNavigationItems } from "@/components/layout/navigation";
@@ -34,6 +35,9 @@ const SidebarHeader = styled.div`
 `;
 
 const Brand = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
   color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.25rem;
@@ -43,6 +47,17 @@ const Brand = styled(Link)`
   &:hover {
     text-decoration: none;
   }
+`;
+
+const BrandMark = styled.span`
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #187c70;
+  color: #ffffff;
 `;
 
 const BrandCaption = styled.p`
@@ -59,7 +74,9 @@ const SidebarNav = styled.nav`
 
 const SidebarLink = styled(Link)<{ $active: boolean }>`
   display: grid;
-  gap: ${({ theme }) => theme.space[1]};
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: ${({ theme }) => theme.space[3]};
+  align-items: center;
   border: 1px solid ${({ $active }) => ($active ? "rgba(24, 124, 112, 0.22)" : "transparent")};
   border-radius: ${({ theme }) => theme.radii.card};
   background: ${({ $active }) => ($active ? "#edf6f4" : "transparent")};
@@ -76,6 +93,23 @@ const SidebarLink = styled(Link)<{ $active: boolean }>`
     text-decoration: none;
     transform: translateY(-1px);
   }
+`;
+
+const SidebarIcon = styled.span<{ $active: boolean }>`
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: ${({ $active }) => ($active ? "#187c70" : "#f7faf9")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#187c70")};
+`;
+
+const SidebarText = styled.span`
+  display: grid;
+  min-width: 0;
+  gap: ${({ theme }) => theme.space[1]};
 `;
 
 const SidebarLabel = styled.span`
@@ -129,17 +163,32 @@ export function DesktopSidebar({ ownerEmail, pathname }: DesktopSidebarProps) {
   return (
     <Sidebar aria-label="アプリナビゲーション">
       <SidebarHeader>
-        <Brand href="/dashboard">Workout Log</Brand>
+        <Brand href="/dashboard">
+          <BrandMark aria-hidden="true">
+            <Activity size={18} strokeWidth={2.4} />
+          </BrandMark>
+          Workout Log
+        </Brand>
         <BrandCaption>Personal training journal</BrandCaption>
       </SidebarHeader>
 
       <SidebarNav>
-        {appNavigationItems.map((item) => (
-          <SidebarLink key={item.href} href={item.href} $active={isActivePath(pathname, item.href)}>
-            <SidebarLabel>{item.label}</SidebarLabel>
-            <SidebarDescription>{item.description}</SidebarDescription>
-          </SidebarLink>
-        ))}
+        {appNavigationItems.map((item) => {
+          const active = isActivePath(pathname, item.href);
+          const Icon = item.icon;
+
+          return (
+            <SidebarLink key={item.href} href={item.href} $active={active}>
+              <SidebarIcon $active={active} aria-hidden="true">
+                <Icon size={18} strokeWidth={2.2} />
+              </SidebarIcon>
+              <SidebarText>
+                <SidebarLabel>{item.label}</SidebarLabel>
+                <SidebarDescription>{item.description}</SidebarDescription>
+              </SidebarText>
+            </SidebarLink>
+          );
+        })}
       </SidebarNav>
 
       <SidebarFooter>
