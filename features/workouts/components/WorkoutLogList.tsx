@@ -144,11 +144,9 @@ const DeleteActionButton = styled(Button)`
   }
 `;
 
-function SaveButton() {
-  const { pending } = useFormStatus();
-
+function SaveButton({ formId, pending }: { formId: string; pending: boolean }) {
   return (
-    <SaveActionButton type="submit" variant="secondary" disabled={pending}>
+    <SaveActionButton type="submit" variant="secondary" form={formId} disabled={pending}>
       {pending ? "保存中" : "保存"}
     </SaveActionButton>
   );
@@ -171,7 +169,11 @@ function WorkoutLogRow({
   exercises: Exercise[];
   workoutLog: WorkoutLog;
 }) {
-  const [state, formAction] = useActionState(updateWorkoutLog, initialWorkoutLogActionState);
+  const [state, formAction, isUpdatePending] = useActionState(
+    updateWorkoutLog,
+    initialWorkoutLogActionState
+  );
+  const editFormId = `${workoutLog.id}-edit-form`;
   const volume = calculateWorkoutVolume(workoutLog.weight, workoutLog.sets, workoutLog.reps);
 
   return (
@@ -187,7 +189,7 @@ function WorkoutLogRow({
         <Volume>{volume.toLocaleString()}kg</Volume>
       </Summary>
 
-      <EditForm action={formAction}>
+      <EditForm id={editFormId} action={formAction}>
         <input type="hidden" name="id" value={workoutLog.id} />
         <EditGrid>
           <Field>
@@ -251,12 +253,10 @@ function WorkoutLogRow({
           </Message>
         ) : null}
         {state.success ? <Message $tone="success">{state.success}</Message> : null}
-        <RowActions>
-          <SaveButton />
-        </RowActions>
       </EditForm>
 
       <RowActions>
+        <SaveButton formId={editFormId} pending={isUpdatePending} />
         <DeleteForm action={deleteWorkoutLog}>
           <input type="hidden" name="id" value={workoutLog.id} />
           <DeleteButton />
