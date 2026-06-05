@@ -4,6 +4,14 @@ Workout Log は、日々のトレーニング記録、種目管理、目標重�
 
 Next.js App Router、TypeScript、styled-components、Supabase Auth / Database を使い、ポートフォリオとして設計意図や実装方針を説明しやすい構成を意識して作成しています。
 
+## デモ
+
+- URL: https://workout-log-pi.vercel.app
+- テストアカウントID: `shnymywk.portfolio@gmail.com`
+- テストアカウントPassword: `9cAoTQlH3KSYPYvwKiQf`
+
+テストアカウントはポートフォリオ確認用の共有アカウントです。
+
 ## 作成意図
 
 トレーニング記録アプリは、CRUD、認証、集計、グラフ表示、レスポンシブUIなど、Webアプリ開発でよく使う要素を自然に含みます。
