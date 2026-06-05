@@ -19,8 +19,10 @@ const Item = styled.article`
   grid-template-columns: minmax(0, 1fr) auto;
   gap: ${({ theme }) => theme.space[4]};
   align-items: center;
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid rgba(20, 32, 29, 0.1);
   border-radius: ${({ theme }) => theme.radii.card};
+  background: #ffffff;
+  box-shadow: rgba(12, 28, 24, 0.04) 0 12px 32px;
   padding: ${({ theme }) => theme.space[4]};
 
   @media (max-width: 833px) {
@@ -30,28 +32,33 @@ const Item = styled.article`
 
 const Title = styled.h3`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const Meta = styled.p`
   margin: ${({ theme }) => theme.space[1]} 0 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: ${({ theme }) => theme.fontSizes.caption};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const Rate = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  border: 1px solid rgba(24, 124, 112, 0.18);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: #edf6f4;
+  color: #187c70;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: ${({ theme }) => theme.lineHeights.compact};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  padding: 0.375rem 0.75rem;
+  text-align: center;
 `;
 
 function formatWeight(weight: number | null) {
