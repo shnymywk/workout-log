@@ -21,6 +21,30 @@ const Stack = styled.div`
   gap: ${({ theme }) => theme.space[5]};
 `;
 
+const ManagerCard = styled(Card)`
+  border-color: rgba(20, 32, 29, 0.1);
+  background: #ffffff;
+  box-shadow: rgba(12, 28, 24, 0.05) 0 16px 40px;
+`;
+
+const ManagerCardHeader = styled(CardHeader)`
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const ManagerCardTitle = styled(CardTitle)`
+  color: #101816;
+  font-size: 1.125rem;
+  font-weight: 700;
+`;
+
+const ManagerCardDescription = styled(CardDescription)`
+  color: #66726f;
+`;
+
+const ManagerCardBody = styled(CardBody)`
+  gap: ${({ theme }) => theme.space[5]};
+`;
+
 const ErrorText = styled.p`
   margin: 0;
   color: ${({ theme }) => theme.colors.danger};
@@ -37,30 +61,34 @@ export function ExerciseManager({
 }: ExerciseManagerProps) {
   return (
     <Stack>
-      <Card>
-        <CardHeader>
-          <CardTitle>種目を追加</CardTitle>
-          <CardDescription>記録で使う種目を部位に紐づけて登録します。</CardDescription>
-        </CardHeader>
-        <CardBody>
+      <ManagerCard>
+        <ManagerCardHeader>
+          <ManagerCardTitle>種目を追加</ManagerCardTitle>
+          <ManagerCardDescription>
+            記録で使う種目を部位に紐づけて登録します。
+          </ManagerCardDescription>
+        </ManagerCardHeader>
+        <ManagerCardBody>
           <ExerciseCreateForm bodyParts={bodyParts} />
-        </CardBody>
-      </Card>
+        </ManagerCardBody>
+      </ManagerCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>種目一覧</CardTitle>
-          <CardDescription>部位で絞り込みながら、種目名と分類を編集できます。</CardDescription>
-        </CardHeader>
-        <CardBody>
+      <ManagerCard>
+        <ManagerCardHeader>
+          <ManagerCardTitle>種目一覧</ManagerCardTitle>
+          <ManagerCardDescription>
+            部位で絞り込みながら、種目名と分類を編集できます。
+          </ManagerCardDescription>
+        </ManagerCardHeader>
+        <ManagerCardBody>
           <ExerciseFilter bodyParts={bodyParts} selectedBodyPartId={selectedBodyPartId} />
           {fetchError ? (
             <ErrorText role="alert">{fetchError}</ErrorText>
           ) : (
             <ExerciseList bodyParts={bodyParts} exercises={exercises} />
           )}
-        </CardBody>
-      </Card>
+        </ManagerCardBody>
+      </ManagerCard>
     </Stack>
   );
 }

@@ -14,20 +14,28 @@ const Filter = styled.nav`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.space[2]};
+  border: 1px solid rgba(20, 32, 29, 0.1);
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #f7faf9;
+  padding: ${({ theme }) => theme.space[4]};
 `;
 
 const FilterLink = styled(Link)<{ $active: boolean }>`
   border: 1px solid
-    ${({ theme, $active }) => ($active ? theme.colors.textPrimary : theme.colors.border)};
+    ${({ $active }) => ($active ? "rgba(24, 124, 112, 0.28)" : "rgba(20, 32, 29, 0.1)")};
   border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme, $active }) => ($active ? theme.colors.textPrimary : "transparent")};
-  color: ${({ theme, $active }) => ($active ? theme.colors.textOnDark : theme.colors.textPrimary)};
+  background: ${({ $active }) => ($active ? "#187c70" : "#ffffff")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#101816")};
   padding: 0.5rem 0.875rem;
   font-size: ${({ theme }) => theme.fontSizes.caption};
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 
   &:hover {
+    background: ${({ $active }) => ($active ? "#104b44" : "#edf6f4")};
     text-decoration: none;
   }
 `;
