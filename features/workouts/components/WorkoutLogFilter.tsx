@@ -16,9 +16,35 @@ const Form = styled.form`
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: ${({ theme }) => theme.space[3]};
   align-items: end;
+  border: 1px solid rgba(20, 32, 29, 0.1);
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #f7faf9;
+  padding: ${({ theme }) => theme.space[4]};
+
+  input,
+  select {
+    border-color: rgba(20, 32, 29, 0.14);
+    background: #ffffff;
+  }
+
+  input:focus-visible,
+  select:focus-visible {
+    border-color: #187c70;
+    box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
+  }
 
   @media (max-width: 833px) {
     grid-template-columns: 1fr;
+  }
+`;
+
+const FilterButton = styled(Button)`
+  border-color: rgba(24, 124, 112, 0.32);
+  color: #187c70;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #edf6f4;
   }
 `;
 
@@ -47,9 +73,9 @@ export function WorkoutLogFilter({ exercises, filters }: WorkoutLogFilterProps) 
         </Select>
       </Field>
 
-      <Button type="submit" variant="secondary">
+      <FilterButton type="submit" variant="secondary">
         絞り込む
-      </Button>
+      </FilterButton>
     </Form>
   );
 }
