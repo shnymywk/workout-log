@@ -18,7 +18,21 @@ type WorkoutLogCreateFormProps = {
 
 const Form = styled.form`
   display: grid;
-  gap: ${({ theme }) => theme.space[4]};
+  gap: ${({ theme }) => theme.space[5]};
+
+  input,
+  select,
+  textarea {
+    border-color: rgba(20, 32, 29, 0.14);
+    background: #f7faf9;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    border-color: #187c70;
+    box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
+  }
 `;
 
 const FormGrid = styled.div`
@@ -38,33 +52,33 @@ const Actions = styled.div`
 
 const Message = styled.p<{ $tone: "success" | "error" }>`
   margin: 0;
-  color: ${({ theme, $tone }) =>
-    $tone === "success" ? theme.colors.linkBlue : theme.colors.danger};
+  color: ${({ theme, $tone }) => ($tone === "success" ? "#187c70" : theme.colors.danger)};
   font-size: ${({ theme }) => theme.fontSizes.caption};
   font-weight: 600;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const VolumePreview = styled.div`
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid rgba(24, 124, 112, 0.18);
   border-radius: ${({ theme }) => theme.radii.card};
-  background: ${({ theme }) => theme.colors.backgroundElevated};
+  background: #edf6f4;
   padding: ${({ theme }) => theme.space[4]};
 `;
 
 const VolumeLabel = styled.p`
   margin: 0 0 ${({ theme }) => theme.space[1]};
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const VolumeValue = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #187c70;
   font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.75rem;
+  font-weight: 700;
   line-height: ${({ theme }) => theme.lineHeights.compact};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
@@ -72,6 +86,15 @@ const VolumeValue = styled.p`
 const EmptyLink = styled(Link)`
   color: ${({ theme }) => theme.colors.linkBlue};
   font-weight: 600;
+`;
+
+const PrimarySubmitButton = styled(Button)`
+  background: #187c70;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #104b44;
+  }
 `;
 
 function getTodayDateValue() {
@@ -82,9 +105,9 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={pending}>
+    <PrimarySubmitButton type="submit" disabled={pending}>
       {pending ? "保存中" : "記録する"}
-    </Button>
+    </PrimarySubmitButton>
   );
 }
 

@@ -26,8 +26,10 @@ const List = styled.div`
 const Row = styled.article`
   display: grid;
   gap: ${({ theme }) => theme.space[4]};
-  border: 1px solid ${({ theme }) => theme.colors.border};
+  border: 1px solid rgba(20, 32, 29, 0.1);
   border-radius: ${({ theme }) => theme.radii.card};
+  background: #ffffff;
+  box-shadow: rgba(12, 28, 24, 0.04) 0 12px 32px;
   padding: ${({ theme }) => theme.space[4]};
 `;
 
@@ -44,32 +46,50 @@ const Summary = styled.div`
 
 const SummaryTitle = styled.h3`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const SummaryMeta = styled.p`
   margin: ${({ theme }) => theme.space[1]} 0 0;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  color: #66726f;
   font-size: ${({ theme }) => theme.fontSizes.caption};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const Volume = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.textPrimary};
+  border: 1px solid rgba(24, 124, 112, 0.18);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: #edf6f4;
+  color: #187c70;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  padding: 0.375rem 0.75rem;
 `;
 
 const EditForm = styled.form`
   display: grid;
   gap: ${({ theme }) => theme.space[3]};
+
+  input,
+  select,
+  textarea {
+    border-color: rgba(20, 32, 29, 0.14);
+    background: #f7faf9;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    border-color: #187c70;
+    box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
+  }
 `;
 
 const EditGrid = styled.div`
@@ -99,20 +119,38 @@ const DeleteForm = styled.form`
 
 const Message = styled.p<{ $tone: "success" | "error" }>`
   margin: 0;
-  color: ${({ theme, $tone }) =>
-    $tone === "success" ? theme.colors.linkBlue : theme.colors.danger};
+  color: ${({ theme, $tone }) => ($tone === "success" ? "#187c70" : theme.colors.danger)};
   font-size: ${({ theme }) => theme.fontSizes.caption};
   font-weight: 600;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+`;
+
+const SaveActionButton = styled(Button)`
+  border-color: rgba(24, 124, 112, 0.32);
+  color: #187c70;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #edf6f4;
+  }
+`;
+
+const DeleteActionButton = styled(Button)`
+  color: ${({ theme }) => theme.colors.danger};
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #fff7f5;
+  }
 `;
 
 function SaveButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" variant="secondary" disabled={pending}>
+    <SaveActionButton type="submit" variant="secondary" disabled={pending}>
       {pending ? "保存中" : "保存"}
-    </Button>
+    </SaveActionButton>
   );
 }
 
@@ -120,9 +158,9 @@ function DeleteButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" variant="ghost" disabled={pending}>
+    <DeleteActionButton type="submit" variant="ghost" disabled={pending}>
       {pending ? "削除中" : "削除"}
-    </Button>
+    </DeleteActionButton>
   );
 }
 
