@@ -21,7 +21,7 @@ const StyledButton = styled.button<{ $variant: ButtonVariant }>`
   border-radius: ${({ theme }) => theme.radii.pill};
   padding: 0.625rem 1.375rem;
   font-size: 1rem;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
   transition:
@@ -44,15 +44,16 @@ const StyledButton = styled.button<{ $variant: ButtonVariant }>`
     cursor: progress;
   }
 
-  ${({ theme, $variant }) => {
+  ${({ $variant }) => {
     if ($variant === "secondary") {
       return css`
-        background: transparent;
-        border-color: ${theme.colors.appleBlue};
-        color: ${theme.colors.appleBlue};
+        background: #ffffff;
+        border-color: rgba(24, 124, 112, 0.32);
+        color: #187c70;
 
         &:hover:not(:disabled) {
-          background: rgba(0, 113, 227, 0.08);
+          background: #edf6f4;
+          border-color: rgba(24, 124, 112, 0.44);
         }
       `;
     }
@@ -60,20 +61,20 @@ const StyledButton = styled.button<{ $variant: ButtonVariant }>`
     if ($variant === "ghost") {
       return css`
         background: transparent;
-        color: ${theme.colors.linkBlue};
+        color: #187c70;
 
         &:hover:not(:disabled) {
-          background: ${theme.colors.backgroundElevated};
+          background: #edf6f4;
         }
       `;
     }
 
     return css`
-      background: ${theme.colors.appleBlue};
+      background: #187c70;
       color: #fff;
 
       &:hover:not(:disabled) {
-        background: ${theme.colors.linkBlue};
+        background: #104b44;
       }
     `;
   }}

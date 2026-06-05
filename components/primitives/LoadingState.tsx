@@ -28,7 +28,7 @@ const Skeleton = styled.div<{ $height: string; $width?: string }>`
   width: ${({ $width }) => $width ?? "100%"};
   height: ${({ $height }) => $height};
   border-radius: ${({ theme }) => theme.radii.card};
-  background: ${({ theme }) => theme.colors.border};
+  background: rgba(24, 124, 112, 0.14);
   animation: ${pulse} 1.4s ease-in-out infinite;
 `;
 

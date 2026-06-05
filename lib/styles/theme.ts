@@ -1,17 +1,17 @@
 export const theme = {
   colors: {
-    textPrimary: "#1d1d1f",
-    textSecondary: "#6e6e73",
-    textMuted: "rgba(0, 0, 0, 0.56)",
-    textOnDark: "#f5f5f7",
+    textPrimary: "#101816",
+    textSecondary: "#55615e",
+    textMuted: "#66726f",
+    textOnDark: "#ffffff",
     background: "#ffffff",
-    backgroundElevated: "#f5f5f7",
-    backgroundDark: "#000000",
-    border: "rgba(29, 29, 31, 0.14)",
-    borderStrong: "rgba(29, 29, 31, 0.24)",
-    appleBlue: "#0071e3",
-    linkBlue: "#0066cc",
-    focusRing: "rgba(0, 113, 227, 0.2)",
+    backgroundElevated: "#f3f6f5",
+    backgroundDark: "#101816",
+    border: "rgba(20, 32, 29, 0.1)",
+    borderStrong: "rgba(20, 32, 29, 0.18)",
+    appleBlue: "#187c70",
+    linkBlue: "#187c70",
+    focusRing: "rgba(24, 124, 112, 0.16)",
     danger: "#b42318"
   },
   fonts: {
@@ -42,8 +42,8 @@ export const theme = {
     pill: "980px"
   },
   shadows: {
-    focus: "0 0 0 3px rgba(0, 113, 227, 0.2)",
-    card: "rgba(0, 0, 0, 0.08) 0 12px 30px"
+    focus: "0 0 0 3px rgba(24, 124, 112, 0.16)",
+    card: "rgba(12, 28, 24, 0.05) 0 16px 40px"
   },
   space: {
     1: "0.25rem",

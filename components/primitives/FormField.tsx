@@ -22,7 +22,7 @@ const FieldWrapper = styled.div`
 const StyledLabel = styled.label`
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: ${({ theme }) => theme.fontSizes.caption};
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
   line-height: 1.4;
 `;
@@ -32,7 +32,7 @@ const controlStyles = css`
   min-height: 2.75rem;
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.control};
-  background: ${({ theme }) => theme.colors.background};
+  background: #f7faf9;
   color: ${({ theme }) => theme.colors.textPrimary};
   font-size: 1rem;
   line-height: 1.4;
@@ -51,6 +51,7 @@ const controlStyles = css`
 
   &:focus-visible {
     border-color: ${({ theme }) => theme.colors.appleBlue};
+    box-shadow: ${({ theme }) => theme.shadows.focus};
   }
 
   &[aria-invalid="true"] {

@@ -12,9 +12,9 @@ const Wrapper = styled.div`
   display: grid;
   justify-items: center;
   gap: ${({ theme }) => theme.space[3]};
-  border: 1px dashed ${({ theme }) => theme.colors.borderStrong};
+  border: 1px dashed rgba(24, 124, 112, 0.3);
   border-radius: ${({ theme }) => theme.radii.card};
-  background: ${({ theme }) => theme.colors.background};
+  background: #f7faf9;
   color: ${({ theme }) => theme.colors.textSecondary};
   padding: ${({ theme }) => theme.space[6]};
   text-align: center;

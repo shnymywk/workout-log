@@ -11,6 +11,7 @@ const StyledCard = styled.section`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radii.card};
   background: ${({ theme }) => theme.colors.background};
+  box-shadow: ${({ theme }) => theme.shadows.card};
   padding: clamp(1rem, 2vw, 1.5rem);
 `;
 
@@ -24,8 +25,8 @@ const StyledCardTitle = styled.h2`
   margin: 0;
   color: ${({ theme }) => theme.colors.textPrimary};
   font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   line-height: ${({ theme }) => theme.lineHeights.compact};
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
