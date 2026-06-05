@@ -28,7 +28,21 @@ const workoutLogs = [
     sets: 3,
     reps: 8,
     memo: "フォームは安定",
-    created_at: "2026-06-03T00:00:00.000Z"
+    created_at: "2026-06-03T00:00:00.000Z",
+    workout_log_sets: [
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        set_number: 1,
+        weight: 70,
+        reps: 8
+      },
+      {
+        id: "55555555-5555-4555-8555-555555555555",
+        set_number: 2,
+        weight: 72.5,
+        reps: 6
+      }
+    ]
   }
 ];
 
@@ -41,10 +55,15 @@ describe("WorkoutLogList", () => {
     );
 
     expect(screen.getByRole("heading", { name: "ベンチプレス" })).toBeInTheDocument();
-    expect(screen.getByText("2026-06-03 / 70kg x 3set x 8rep")).toBeInTheDocument();
-    expect(screen.getByText("1,680kg")).toBeInTheDocument();
+    expect(
+      screen.getByText("2026-06-03 / 1set 70kg x 8rep / 2set 72.5kg x 6rep")
+    ).toBeInTheDocument();
+    expect(screen.getByText("995kg")).toBeInTheDocument();
     expect(screen.getByLabelText("日付")).toBeInTheDocument();
     expect(screen.getByLabelText("種目")).toBeInTheDocument();
+    expect(screen.getAllByLabelText("重量")).toHaveLength(2);
+    expect(screen.getAllByLabelText("回数")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "セット追加" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("フォームは安定")).toBeInTheDocument();
   });
 

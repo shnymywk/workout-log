@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useActionState } from "react";
@@ -9,11 +10,24 @@ import styled from "styled-components";
 import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import { createWorkoutLog } from "@/features/workouts/actions/workout-logs";
-import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
+import { calculateWorkoutSetDetailsVolume } from "@/features/workouts/lib/volume";
 import { initialWorkoutLogActionState } from "@/features/workouts/types/workout-log";
 
 type WorkoutLogCreateFormProps = {
   exercises: Exercise[];
+};
+
+type DraftSet = {
+  id: string;
+  weight: string;
+  reps: string;
+};
+
+type DraftWorkoutLog = {
+  id: string;
+  exerciseId: string;
+  memo: string;
+  sets: DraftSet[];
 };
 
 const Form = styled.form`
@@ -37,7 +51,7 @@ const Form = styled.form`
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: ${({ theme }) => theme.space[3]};
 
   @media (max-width: 833px) {
@@ -47,7 +61,9 @@ const FormGrid = styled.div`
 
 const Actions = styled.div`
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: ${({ theme }) => theme.space[2]};
 `;
 
 const Message = styled.p<{ $tone: "success" | "error" }>`
@@ -83,6 +99,79 @@ const VolumeValue = styled.p`
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
+const WorkoutLogStack = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.space[4]};
+`;
+
+const WorkoutLogCard = styled.section`
+  display: grid;
+  gap: ${({ theme }) => theme.space[4]};
+  border: 1px solid rgba(20, 32, 29, 0.1);
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #ffffff;
+  padding: ${({ theme }) => theme.space[4]};
+`;
+
+const WorkoutLogHeader = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: ${({ theme }) => theme.space[3]};
+  align-items: end;
+
+  @media (max-width: 833px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SetRows = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const SetRow = styled.div`
+  display: grid;
+  grid-template-columns: 2rem repeat(2, minmax(0, 1fr)) auto;
+  gap: ${({ theme }) => theme.space[2]};
+  align-items: end;
+
+  @media (max-width: 833px) {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+  }
+`;
+
+const SetNumber = styled.span`
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  color: #66726f;
+  font-family: ${({ theme }) => theme.fonts.display};
+  font-weight: 700;
+`;
+
+const AddButton = styled(Button)`
+  border-color: rgba(24, 124, 112, 0.32);
+  color: #187c70;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #edf6f4;
+  }
+`;
+
+const IconButton = styled(Button)`
+  padding: 0.625rem;
+`;
+
+const RemoveButton = styled(IconButton)`
+  color: ${({ theme }) => theme.colors.danger};
+
+  &:hover:not(:disabled) {
+    background: #fff7f5;
+  }
+`;
+
 const EmptyLink = styled(Link)`
   color: ${({ theme }) => theme.colors.linkBlue};
   font-weight: 600;
@@ -101,6 +190,31 @@ function getTodayDateValue() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function createDraftId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random()}`;
+}
+
+function createDraftSet(): DraftSet {
+  return {
+    id: createDraftId(),
+    weight: "0",
+    reps: "0"
+  };
+}
+
+function createDraftWorkoutLog(exerciseId: string): DraftWorkoutLog {
+  return {
+    id: createDraftId(),
+    exerciseId,
+    memo: "",
+    sets: [createDraftSet()]
+  };
+}
+
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -113,13 +227,94 @@ function SubmitButton() {
 
 export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
   const [state, formAction] = useActionState(createWorkoutLog, initialWorkoutLogActionState);
-  const [weight, setWeight] = useState("0");
-  const [sets, setSets] = useState("0");
-  const [reps, setReps] = useState("0");
-  const totalVolume = useMemo(
-    () => calculateWorkoutVolume(Number(weight), Number(sets), Number(reps)),
-    [weight, sets, reps]
+  const [workoutLogs, setWorkoutLogs] = useState<DraftWorkoutLog[]>(() => [
+    createDraftWorkoutLog(exercises[0]?.id ?? "")
+  ]);
+  const serializedWorkoutLogs = useMemo(
+    () =>
+      JSON.stringify(
+        workoutLogs.map((workoutLog) => ({
+          exerciseId: workoutLog.exerciseId,
+          memo: workoutLog.memo,
+          sets: workoutLog.sets.map((set) => ({
+            weight: set.weight,
+            reps: set.reps
+          }))
+        }))
+      ),
+    [workoutLogs]
   );
+  const totalVolume = useMemo(
+    () =>
+      workoutLogs.reduce(
+        (total, workoutLog) =>
+          total +
+          calculateWorkoutSetDetailsVolume(
+            workoutLog.sets.map((set) => ({
+              weight: Number(set.weight),
+              reps: Number(set.reps)
+            }))
+          ),
+        0
+      ),
+    [workoutLogs]
+  );
+
+  function updateWorkoutLog(workoutLogId: string, nextValues: Partial<DraftWorkoutLog>) {
+    setWorkoutLogs((currentWorkoutLogs) =>
+      currentWorkoutLogs.map((workoutLog) =>
+        workoutLog.id === workoutLogId ? { ...workoutLog, ...nextValues } : workoutLog
+      )
+    );
+  }
+
+  function addWorkoutLog() {
+    setWorkoutLogs((currentWorkoutLogs) => [
+      ...currentWorkoutLogs,
+      createDraftWorkoutLog(exercises[0]?.id ?? "")
+    ]);
+  }
+
+  function removeWorkoutLog(workoutLogId: string) {
+    setWorkoutLogs((currentWorkoutLogs) =>
+      currentWorkoutLogs.filter((workoutLog) => workoutLog.id !== workoutLogId)
+    );
+  }
+
+  function updateSet(workoutLogId: string, setId: string, nextValues: Partial<DraftSet>) {
+    setWorkoutLogs((currentWorkoutLogs) =>
+      currentWorkoutLogs.map((workoutLog) => {
+        if (workoutLog.id !== workoutLogId) {
+          return workoutLog;
+        }
+
+        return {
+          ...workoutLog,
+          sets: workoutLog.sets.map((set) => (set.id === setId ? { ...set, ...nextValues } : set))
+        };
+      })
+    );
+  }
+
+  function addSet(workoutLogId: string) {
+    setWorkoutLogs((currentWorkoutLogs) =>
+      currentWorkoutLogs.map((workoutLog) =>
+        workoutLog.id === workoutLogId
+          ? { ...workoutLog, sets: [...workoutLog.sets, createDraftSet()] }
+          : workoutLog
+      )
+    );
+  }
+
+  function removeSet(workoutLogId: string, setId: string) {
+    setWorkoutLogs((currentWorkoutLogs) =>
+      currentWorkoutLogs.map((workoutLog) =>
+        workoutLog.id === workoutLogId
+          ? { ...workoutLog, sets: workoutLog.sets.filter((set) => set.id !== setId) }
+          : workoutLog
+      )
+    );
+  }
 
   if (exercises.length === 0) {
     return (
@@ -131,67 +326,115 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
 
   return (
     <Form action={formAction}>
-      <Field>
-        <Label htmlFor="trained-at">日付</Label>
-        <Input id="trained-at" name="trainedAt" type="date" defaultValue={getTodayDateValue()} />
-      </Field>
-
-      <Field>
-        <Label htmlFor="exercise-id">種目</Label>
-        <Select id="exercise-id" name="exerciseId" defaultValue={exercises[0]?.id} required>
-          {exercises.map((exercise) => (
-            <option key={exercise.id} value={exercise.id}>
-              {exercise.name}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
       <FormGrid>
         <Field>
-          <Label htmlFor="weight">重量</Label>
-          <Input
-            id="weight"
-            name="weight"
-            inputMode="decimal"
-            placeholder="70"
-            value={weight}
-            onChange={(event) => setWeight(event.target.value)}
-          />
+          <Label htmlFor="trained-at">日付</Label>
+          <Input id="trained-at" name="trainedAt" type="date" defaultValue={getTodayDateValue()} />
         </Field>
-        <Field>
-          <Label htmlFor="sets">セット</Label>
-          <Input
-            id="sets"
-            name="sets"
-            inputMode="numeric"
-            placeholder="3"
-            value={sets}
-            onChange={(event) => setSets(event.target.value)}
-          />
-        </Field>
-        <Field>
-          <Label htmlFor="reps">回数</Label>
-          <Input
-            id="reps"
-            name="reps"
-            inputMode="numeric"
-            placeholder="8"
-            value={reps}
-            onChange={(event) => setReps(event.target.value)}
-          />
-        </Field>
+
+        <VolumePreview aria-live="polite">
+          <VolumeLabel>総ボリューム</VolumeLabel>
+          <VolumeValue>{totalVolume.toLocaleString()}kg</VolumeValue>
+        </VolumePreview>
       </FormGrid>
 
-      <VolumePreview aria-live="polite">
-        <VolumeLabel>総ボリューム</VolumeLabel>
-        <VolumeValue>{totalVolume.toLocaleString()}kg</VolumeValue>
-      </VolumePreview>
+      <input type="hidden" name="logs" value={serializedWorkoutLogs} />
 
-      <Field>
-        <Label htmlFor="memo">メモ</Label>
-        <Textarea id="memo" name="memo" placeholder="フォーム、疲労感、次回の目安など" />
-      </Field>
+      <WorkoutLogStack>
+        {workoutLogs.map((workoutLog, workoutLogIndex) => (
+          <WorkoutLogCard key={workoutLog.id}>
+            <WorkoutLogHeader>
+              <Field>
+                <Label htmlFor={`${workoutLog.id}-exercise-id`}>種目 {workoutLogIndex + 1}</Label>
+                <Select
+                  id={`${workoutLog.id}-exercise-id`}
+                  value={workoutLog.exerciseId}
+                  onChange={(event) =>
+                    updateWorkoutLog(workoutLog.id, { exerciseId: event.target.value })
+                  }
+                  required
+                >
+                  {exercises.map((exercise) => (
+                    <option key={exercise.id} value={exercise.id}>
+                      {exercise.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              {workoutLogs.length > 1 ? (
+                <RemoveButton
+                  type="button"
+                  variant="ghost"
+                  aria-label={`種目${workoutLogIndex + 1}を削除`}
+                  title={`種目${workoutLogIndex + 1}を削除`}
+                  onClick={() => removeWorkoutLog(workoutLog.id)}
+                >
+                  <Trash2 aria-hidden="true" size={18} />
+                </RemoveButton>
+              ) : null}
+            </WorkoutLogHeader>
+
+            <SetRows>
+              {workoutLog.sets.map((set, setIndex) => (
+                <SetRow key={set.id}>
+                  <SetNumber>{setIndex + 1}</SetNumber>
+                  <Field>
+                    <Label htmlFor={`${set.id}-weight`}>重量</Label>
+                    <Input
+                      id={`${set.id}-weight`}
+                      inputMode="decimal"
+                      placeholder="70"
+                      value={set.weight}
+                      onChange={(event) =>
+                        updateSet(workoutLog.id, set.id, { weight: event.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field>
+                    <Label htmlFor={`${set.id}-reps`}>回数</Label>
+                    <Input
+                      id={`${set.id}-reps`}
+                      inputMode="numeric"
+                      placeholder="8"
+                      value={set.reps}
+                      onChange={(event) =>
+                        updateSet(workoutLog.id, set.id, { reps: event.target.value })
+                      }
+                    />
+                  </Field>
+                  <RemoveButton
+                    type="button"
+                    variant="ghost"
+                    aria-label={`種目${workoutLogIndex + 1}のセット${setIndex + 1}を削除`}
+                    title={`種目${workoutLogIndex + 1}のセット${setIndex + 1}を削除`}
+                    disabled={workoutLog.sets.length === 1}
+                    onClick={() => removeSet(workoutLog.id, set.id)}
+                  >
+                    <Trash2 aria-hidden="true" size={18} />
+                  </RemoveButton>
+                </SetRow>
+              ))}
+            </SetRows>
+
+            <Actions>
+              <AddButton type="button" variant="secondary" onClick={() => addSet(workoutLog.id)}>
+                <Plus aria-hidden="true" size={18} />
+                セット追加
+              </AddButton>
+            </Actions>
+
+            <Field>
+              <Label htmlFor={`${workoutLog.id}-memo`}>メモ</Label>
+              <Textarea
+                id={`${workoutLog.id}-memo`}
+                placeholder="フォーム、疲労感、次回の目安など"
+                value={workoutLog.memo}
+                onChange={(event) => updateWorkoutLog(workoutLog.id, { memo: event.target.value })}
+              />
+            </Field>
+          </WorkoutLogCard>
+        ))}
+      </WorkoutLogStack>
 
       {state.error ? (
         <Message $tone="error" role="alert">
@@ -201,6 +444,10 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
       {state.success ? <Message $tone="success">{state.success}</Message> : null}
 
       <Actions>
+        <AddButton type="button" variant="secondary" onClick={addWorkoutLog}>
+          <Plus aria-hidden="true" size={18} />
+          種目追加
+        </AddButton>
         <SubmitButton />
       </Actions>
     </Form>
