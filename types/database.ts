@@ -148,6 +148,52 @@ export type Database = {
           }
         ];
       };
+      workout_log_sets: {
+        Row: {
+          id: string;
+          workout_log_id: string;
+          user_id: string;
+          set_number: number;
+          weight: number;
+          reps: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workout_log_id: string;
+          user_id?: string;
+          set_number: number;
+          weight: number;
+          reps: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workout_log_id?: string;
+          user_id?: string;
+          set_number?: number;
+          weight?: number;
+          reps?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "workout_log_sets_workout_log_id_fkey";
+            columns: ["workout_log_id"];
+            referencedRelation: "workout_logs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "workout_log_sets_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       goals: {
         Row: {
           id: string;
