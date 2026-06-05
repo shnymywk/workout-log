@@ -1,4 +1,8 @@
-import { workoutLogFormSchema } from "@/features/workouts/schemas/workout-log-schema";
+import {
+  workoutLogBatchFormSchema,
+  workoutLogFormSchema,
+  workoutLogSetDetailsFormSchema
+} from "@/features/workouts/schemas/workout-log-schema";
 
 const validExerciseId = "11111111-1111-4111-8111-111111111111";
 
@@ -60,5 +64,72 @@ describe("workoutLogFormSchema", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it("parses batch workout logs with set details", () => {
+    const result = workoutLogBatchFormSchema.parse({
+      trainedAt: "2026-06-03",
+      logs: JSON.stringify([
+        {
+          exerciseId: validExerciseId,
+          memo: "  重め  ",
+          sets: [
+            { weight: "70", reps: "8" },
+            { weight: "72.5", reps: "6" }
+          ]
+        }
+      ])
+    });
+
+    expect(result).toEqual({
+      trainedAt: "2026-06-03",
+      logs: [
+        {
+          exerciseId: validExerciseId,
+          memo: "重め",
+          sets: [
+            { weight: 70, reps: 8 },
+            { weight: 72.5, reps: 6 }
+          ]
+        }
+      ]
+    });
+  });
+
+  it("rejects batch workout logs without sets", () => {
+    const result = workoutLogBatchFormSchema.safeParse({
+      trainedAt: "2026-06-03",
+      logs: JSON.stringify([
+        {
+          exerciseId: validExerciseId,
+          memo: "",
+          sets: []
+        }
+      ])
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("parses workout log set details for editing", () => {
+    const result = workoutLogSetDetailsFormSchema.parse({
+      exerciseId: validExerciseId,
+      trainedAt: "2026-06-03",
+      memo: "",
+      setDetails: JSON.stringify([
+        { weight: "70", reps: "8" },
+        { weight: "72.5", reps: "6" }
+      ])
+    });
+
+    expect(result).toEqual({
+      exerciseId: validExerciseId,
+      trainedAt: "2026-06-03",
+      memo: null,
+      setDetails: [
+        { weight: 70, reps: 8 },
+        { weight: 72.5, reps: 6 }
+      ]
+    });
   });
 });

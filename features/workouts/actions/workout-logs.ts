@@ -3,13 +3,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
-import { workoutLogFormSchema } from "@/features/workouts/schemas/workout-log-schema";
+import {
+  workoutLogBatchFormSchema,
+  workoutLogFormSchema,
+  workoutLogSetDetailsFormSchema,
+  type WorkoutLogFormInput
+} from "@/features/workouts/schemas/workout-log-schema";
 import type { WorkoutLogActionState } from "@/features/workouts/types/workout-log";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, TablesInsert } from "@/types/database";
 
 type Supabase = SupabaseClient<Database>;
 type WorkoutLogSetInsert = TablesInsert<"workout_log_sets">;
+type WorkoutLogSetDetail = {
+  weight: number;
+  reps: number;
+};
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";
@@ -33,75 +42,82 @@ function mapWorkoutLogMutationError(error: { code?: string }) {
   return "トレーニング記録を保存できませんでした。";
 }
 
-function buildWorkoutLogSetRows({
+function summarizeWorkoutLogSets(setDetails: WorkoutLogSetDetail[]) {
+  return {
+    weight: Math.max(...setDetails.map((setDetail) => setDetail.weight)),
+    sets: setDetails.length,
+    reps: Math.max(...setDetails.map((setDetail) => setDetail.reps))
+  };
+}
+
+function buildRepeatedWorkoutLogSetDetails({
   reps,
   sets,
-  userId,
-  weight,
-  workoutLogId
+  weight
 }: {
   reps: number;
   sets: number;
-  userId: string;
   weight: number;
-  workoutLogId: string;
-}): WorkoutLogSetInsert[] {
-  return Array.from({ length: sets }, (_, index) => ({
-    workout_log_id: workoutLogId,
-    user_id: userId,
-    set_number: index + 1,
+}): WorkoutLogSetDetail[] {
+  return Array.from({ length: sets }, () => ({
     weight,
     reps
   }));
 }
 
-async function createWorkoutLogSets({
-  reps,
-  sets,
-  supabase,
+function buildWorkoutLogSetRows({
+  setDetails,
   userId,
-  weight,
   workoutLogId
 }: {
-  reps: number;
-  sets: number;
+  setDetails: WorkoutLogSetDetail[];
+  userId: string;
+  workoutLogId: string;
+}): WorkoutLogSetInsert[] {
+  return setDetails.map((setDetail, index) => ({
+    workout_log_id: workoutLogId,
+    user_id: userId,
+    set_number: index + 1,
+    weight: setDetail.weight,
+    reps: setDetail.reps
+  }));
+}
+
+async function createWorkoutLogSets({
+  setDetails,
+  supabase,
+  userId,
+  workoutLogId
+}: {
+  setDetails: WorkoutLogSetDetail[];
   supabase: Supabase;
   userId: string;
-  weight: number;
   workoutLogId: string;
 }) {
   return supabase.from("workout_log_sets").insert(
     buildWorkoutLogSetRows({
-      reps,
-      sets,
+      setDetails,
       userId,
-      weight,
       workoutLogId
     })
   );
 }
 
 async function syncWorkoutLogSets({
-  reps,
-  sets,
+  setDetails,
   supabase,
   userId,
-  weight,
   workoutLogId
 }: {
-  reps: number;
-  sets: number;
+  setDetails: WorkoutLogSetDetail[];
   supabase: Supabase;
   userId: string;
-  weight: number;
   workoutLogId: string;
 }) {
   const { error: upsertError } = await supabase.from("workout_log_sets").upsert(
     buildWorkoutLogSetRows({
-      reps,
-      sets,
+      setDetails,
       userId,
-      weight,
       workoutLogId
     }),
     { onConflict: "workout_log_id,set_number" }
@@ -116,7 +132,7 @@ async function syncWorkoutLogSets({
     .delete()
     .eq("workout_log_id", workoutLogId)
     .eq("user_id", userId)
-    .gt("set_number", sets);
+    .gt("set_number", setDetails.length);
 
   return deleteError;
 }
@@ -127,18 +143,75 @@ function revalidateWorkoutLogPages() {
   revalidatePath("/goals");
 }
 
+async function insertWorkoutLogWithSets({
+  exerciseId,
+  memo,
+  setDetails,
+  supabase,
+  trainedAt,
+  userId
+}: {
+  exerciseId: string;
+  memo: string | null;
+  setDetails: WorkoutLogSetDetail[];
+  supabase: Supabase;
+  trainedAt: string;
+  userId: string;
+}) {
+  const summary = summarizeWorkoutLogSets(setDetails);
+  const { data: workoutLog, error } = await supabase
+    .from("workout_logs")
+    .insert({
+      exercise_id: exerciseId,
+      trained_at: trainedAt,
+      weight: summary.weight,
+      sets: summary.sets,
+      reps: summary.reps,
+      memo,
+      user_id: userId
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("Failed to create workout log", error);
+
+    return { error, workoutLogId: null };
+  }
+
+  const { error: workoutLogSetsError } = await createWorkoutLogSets({
+    setDetails,
+    supabase,
+    userId,
+    workoutLogId: workoutLog.id
+  });
+
+  if (workoutLogSetsError) {
+    console.error("Failed to create workout log sets", workoutLogSetsError);
+
+    return { error: workoutLogSetsError, workoutLogId: workoutLog.id };
+  }
+
+  return { error: null, workoutLogId: workoutLog.id };
+}
+
 export async function createWorkoutLog(
   _previousState: WorkoutLogActionState,
   formData: FormData
 ): Promise<WorkoutLogActionState> {
-  const parsed = workoutLogFormSchema.safeParse({
-    exerciseId: formData.get("exerciseId"),
-    trainedAt: formData.get("trainedAt"),
-    weight: formData.get("weight"),
-    sets: formData.get("sets"),
-    reps: formData.get("reps"),
-    memo: formData.get("memo")
-  });
+  const parsed = formData.has("logs")
+    ? workoutLogBatchFormSchema.safeParse({
+        trainedAt: formData.get("trainedAt"),
+        logs: formData.get("logs")
+      })
+    : workoutLogFormSchema.safeParse({
+        exerciseId: formData.get("exerciseId"),
+        trainedAt: formData.get("trainedAt"),
+        weight: formData.get("weight"),
+        sets: formData.get("sets"),
+        reps: formData.get("reps"),
+        memo: formData.get("memo")
+      });
 
   if (!parsed.success) {
     return {
@@ -157,57 +230,51 @@ export async function createWorkoutLog(
     };
   }
 
-  const { data: workoutLog, error } = await supabase
-    .from("workout_logs")
-    .insert({
-      exercise_id: parsed.data.exerciseId,
-      trained_at: parsed.data.trainedAt,
-      weight: parsed.data.weight,
-      sets: parsed.data.sets,
-      reps: parsed.data.reps,
-      memo: parsed.data.memo,
-      user_id: userData.user.id
-    })
-    .select("id")
-    .single();
+  const createdWorkoutLogIds: string[] = [];
+  const workoutLogs = "logs" in parsed.data ? parsed.data.logs : [parsed.data];
 
-  if (error) {
-    console.error("Failed to create workout log", error);
+  for (const workoutLog of workoutLogs) {
+    const setDetails =
+      "sets" in workoutLog && Array.isArray(workoutLog.sets)
+        ? workoutLog.sets
+        : buildRepeatedWorkoutLogSetDetails(workoutLog as WorkoutLogFormInput);
+    const result = await insertWorkoutLogWithSets({
+      exerciseId: workoutLog.exerciseId,
+      memo: workoutLog.memo,
+      setDetails,
+      supabase,
+      trainedAt: parsed.data.trainedAt,
+      userId: userData.user.id
+    });
 
-    return {
-      error: mapWorkoutLogMutationError(error),
-      success: null
-    };
-  }
+    if (result.workoutLogId) {
+      createdWorkoutLogIds.push(result.workoutLogId);
+    }
 
-  const { error: workoutLogSetsError } = await createWorkoutLogSets({
-    reps: parsed.data.reps,
-    sets: parsed.data.sets,
-    supabase,
-    userId: userData.user.id,
-    weight: parsed.data.weight,
-    workoutLogId: workoutLog.id
-  });
+    if (result.error) {
+      if (createdWorkoutLogIds.length > 0) {
+        await supabase
+          .from("workout_logs")
+          .delete()
+          .eq("user_id", userData.user.id)
+          .in("id", createdWorkoutLogIds);
+      }
 
-  if (workoutLogSetsError) {
-    console.error("Failed to create workout log sets", workoutLogSetsError);
-    await supabase
-      .from("workout_logs")
-      .delete()
-      .eq("id", workoutLog.id)
-      .eq("user_id", userData.user.id);
-
-    return {
-      error: mapWorkoutLogMutationError(workoutLogSetsError),
-      success: null
-    };
+      return {
+        error: mapWorkoutLogMutationError(result.error),
+        success: null
+      };
+    }
   }
 
   revalidateWorkoutLogPages();
 
   return {
     error: null,
-    success: "トレーニング記録を保存しました。"
+    success:
+      workoutLogs.length > 1
+        ? `${workoutLogs.length}件のトレーニング記録を保存しました。`
+        : "トレーニング記録を保存しました。"
   };
 }
 
@@ -224,14 +291,21 @@ export async function updateWorkoutLog(
     };
   }
 
-  const parsed = workoutLogFormSchema.safeParse({
-    exerciseId: formData.get("exerciseId"),
-    trainedAt: formData.get("trainedAt"),
-    weight: formData.get("weight"),
-    sets: formData.get("sets"),
-    reps: formData.get("reps"),
-    memo: formData.get("memo")
-  });
+  const parsed = formData.has("setDetails")
+    ? workoutLogSetDetailsFormSchema.safeParse({
+        exerciseId: formData.get("exerciseId"),
+        trainedAt: formData.get("trainedAt"),
+        memo: formData.get("memo"),
+        setDetails: formData.get("setDetails")
+      })
+    : workoutLogFormSchema.safeParse({
+        exerciseId: formData.get("exerciseId"),
+        trainedAt: formData.get("trainedAt"),
+        weight: formData.get("weight"),
+        sets: formData.get("sets"),
+        reps: formData.get("reps"),
+        memo: formData.get("memo")
+      });
 
   if (!parsed.success) {
     return {
@@ -240,6 +314,11 @@ export async function updateWorkoutLog(
     };
   }
 
+  const setDetails =
+    "setDetails" in parsed.data
+      ? parsed.data.setDetails
+      : buildRepeatedWorkoutLogSetDetails(parsed.data);
+  const summary = summarizeWorkoutLogSets(setDetails);
   const supabase = await createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
 
@@ -255,9 +334,9 @@ export async function updateWorkoutLog(
     .update({
       exercise_id: parsed.data.exerciseId,
       trained_at: parsed.data.trainedAt,
-      weight: parsed.data.weight,
-      sets: parsed.data.sets,
-      reps: parsed.data.reps,
+      weight: summary.weight,
+      sets: summary.sets,
+      reps: summary.reps,
       memo: parsed.data.memo,
       updated_at: new Date().toISOString()
     })
@@ -274,11 +353,9 @@ export async function updateWorkoutLog(
   }
 
   const workoutLogSetsError = await syncWorkoutLogSets({
-    reps: parsed.data.reps,
-    sets: parsed.data.sets,
+    setDetails,
     supabase,
     userId: userData.user.id,
-    weight: parsed.data.weight,
     workoutLogId: id
   });
 
