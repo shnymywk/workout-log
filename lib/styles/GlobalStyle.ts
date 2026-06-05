@@ -9,7 +9,7 @@ export const GlobalStyle = createGlobalStyle`
 
   html {
     min-width: 320px;
-    background: ${({ theme }) => theme.colors.background};
+    background: ${({ theme }) => theme.colors.backgroundElevated};
     color: ${({ theme }) => theme.colors.textPrimary};
     font-family: ${({ theme }) => theme.fonts.text};
     text-size-adjust: 100%;
@@ -18,13 +18,17 @@ export const GlobalStyle = createGlobalStyle`
   body {
     min-height: 100vh;
     margin: 0;
-    background: ${({ theme }) => theme.colors.background};
+    background: ${({ theme }) => theme.colors.backgroundElevated};
     color: ${({ theme }) => theme.colors.textPrimary};
     font-family: ${({ theme }) => theme.fonts.text};
     font-size: ${({ theme }) => theme.fontSizes.body};
     font-weight: 400;
     line-height: ${({ theme }) => theme.lineHeights.body};
     letter-spacing: ${({ theme }) => theme.letterSpacing.body};
+  }
+
+  ::selection {
+    background: rgba(24, 124, 112, 0.18);
   }
 
   button,
@@ -42,6 +46,7 @@ export const GlobalStyle = createGlobalStyle`
   a {
     color: ${({ theme }) => theme.colors.linkBlue};
     text-decoration: none;
+    text-underline-offset: 0.18em;
   }
 
   a:hover {
