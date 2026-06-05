@@ -1,6 +1,6 @@
 import { calculateAchievementRate } from "@/features/goals/lib/progress";
 import type { Goal } from "@/features/goals/types/goal";
-import { calculateWorkoutVolume } from "@/features/workouts/lib/volume";
+import { calculateWorkoutLogVolume } from "@/features/workouts/lib/volume";
 import type { WorkoutLog } from "@/features/workouts/types/workout-log";
 
 export type DashboardSummary = {
@@ -35,8 +35,7 @@ function countTrainingDaysInRange(workoutLogs: WorkoutLog[], startDate: string, 
 
 function calculateTotalVolume(workoutLogs: WorkoutLog[]) {
   return workoutLogs.reduce(
-    (totalVolume, workoutLog) =>
-      totalVolume + calculateWorkoutVolume(workoutLog.weight, workoutLog.sets, workoutLog.reps),
+    (totalVolume, workoutLog) => totalVolume + calculateWorkoutLogVolume(workoutLog),
     0
   );
 }

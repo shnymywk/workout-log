@@ -11,7 +11,21 @@ const workoutLogs: WorkoutLog[] = [
     sets: 3,
     reps: 8,
     memo: null,
-    created_at: "2026-06-03T01:00:00.000Z"
+    created_at: "2026-06-03T01:00:00.000Z",
+    workout_log_sets: [
+      {
+        id: "set-1",
+        set_number: 1,
+        weight: 80,
+        reps: 8
+      },
+      {
+        id: "set-2",
+        set_number: 2,
+        weight: 82.5,
+        reps: 6
+      }
+    ]
   },
   {
     id: "log-2",
@@ -115,7 +129,7 @@ describe("buildDashboardCharts", () => {
     expect(charts.volumeSeries.at(-1)).toEqual({
       date: "2026-06-03",
       label: "6/3",
-      volume: 1920
+      volume: 1135
     });
   });
 });

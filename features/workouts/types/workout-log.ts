@@ -10,11 +10,17 @@ export const initialWorkoutLogActionState: WorkoutLogActionState = {
   success: null
 };
 
+export type WorkoutLogSet = Pick<
+  Tables<"workout_log_sets">,
+  "id" | "set_number" | "weight" | "reps"
+>;
+
 export type WorkoutLog = Pick<
   Tables<"workout_logs">,
   "id" | "exercise_id" | "trained_at" | "weight" | "sets" | "reps" | "memo" | "created_at"
 > & {
   exercise_name: string;
+  workout_log_sets?: WorkoutLogSet[];
 };
 
 export type WorkoutLogFilters = {

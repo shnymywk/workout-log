@@ -12,7 +12,21 @@ const workoutLogs: WorkoutLog[] = [
     sets: 3,
     reps: 8,
     memo: null,
-    created_at: "2026-06-03T00:00:00.000Z"
+    created_at: "2026-06-03T00:00:00.000Z",
+    workout_log_sets: [
+      {
+        id: "set-1",
+        set_number: 1,
+        weight: 70,
+        reps: 8
+      },
+      {
+        id: "set-2",
+        set_number: 2,
+        weight: 72.5,
+        reps: 6
+      }
+    ]
   },
   {
     id: "log-2",
@@ -83,7 +97,7 @@ describe("buildDashboardSummary", () => {
     expect(summary).toEqual({
       weeklyTrainingDays: 2,
       monthlyTrainingDays: 3,
-      totalVolume: 4580,
+      totalVolume: 3895,
       averageAchievementRate: 80
     });
   });
