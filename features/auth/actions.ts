@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import type { LoginActionState, SignUpActionState } from "@/features/auth/action-state";
@@ -17,6 +18,17 @@ function getSafeRedirectPath(value: FormDataEntryValue | null) {
   }
 
   return path;
+}
+
+async function getEmailRedirectUrl() {
+  const requestHeaders = await headers();
+  const origin = requestHeaders.get("origin");
+
+  if (origin?.startsWith("http://") || origin?.startsWith("https://")) {
+    return `${origin}/login`;
+  }
+
+  return null;
 }
 
 export async function login(
@@ -71,9 +83,15 @@ export async function signUp(
   }
 
   const supabase = await createClient();
+  const emailRedirectTo = await getEmailRedirectUrl();
   const { data, error } = await supabase.auth.signUp({
     email,
-    password
+    password,
+    options: emailRedirectTo
+      ? {
+          emailRedirectTo
+        }
+      : undefined
   });
 
   if (error) {
