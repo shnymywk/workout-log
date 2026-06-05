@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Activity } from "lucide-react";
 import styled from "styled-components";
 
 import { appNavigationItems } from "@/components/layout/navigation";
@@ -34,7 +35,10 @@ const MobileHeaderInner = styled.div`
 `;
 
 const Brand = styled(Link)`
+  display: inline-flex;
   min-width: 0;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
   color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
   font-size: 1.25rem;
@@ -47,6 +51,18 @@ const Brand = styled(Link)`
   &:hover {
     text-decoration: none;
   }
+`;
+
+const BrandMark = styled.span`
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #187c70;
+  color: #ffffff;
 `;
 
 const MobileNav = styled.nav`
@@ -71,6 +87,7 @@ const MobileLink = styled(Link)<{ $active: boolean }>`
   flex: 0 0 auto;
   min-height: 2.75rem;
   align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
   border: 1px solid
     ${({ $active }) => ($active ? "rgba(24, 124, 112, 0.28)" : "rgba(20, 32, 29, 0.1)")};
   border-radius: ${({ theme }) => theme.radii.pill};
@@ -91,6 +108,11 @@ const MobileLink = styled(Link)<{ $active: boolean }>`
   }
 `;
 
+const MobileLinkIcon = styled.span`
+  display: inline-flex;
+  flex: 0 0 auto;
+`;
+
 function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -99,12 +121,18 @@ export function MobileNavigation({ pathname }: MobileNavigationProps) {
   return (
     <MobileHeader>
       <MobileHeaderInner>
-        <Brand href="/dashboard">Workout Log</Brand>
+        <Brand href="/dashboard">
+          <BrandMark aria-hidden="true">
+            <Activity size={18} strokeWidth={2.4} />
+          </BrandMark>
+          Workout Log
+        </Brand>
         <LogoutButton variant="ghost" />
       </MobileHeaderInner>
       <MobileNav aria-label="アプリナビゲーション">
         {appNavigationItems.map((item) => {
           const active = isActivePath(pathname, item.href);
+          const Icon = item.icon;
 
           return (
             <MobileLink
@@ -113,6 +141,9 @@ export function MobileNavigation({ pathname }: MobileNavigationProps) {
               $active={active}
               aria-current={active ? "page" : undefined}
             >
+              <MobileLinkIcon aria-hidden="true">
+                <Icon size={16} strokeWidth={2.2} />
+              </MobileLinkIcon>
               {item.label}
             </MobileLink>
           );
