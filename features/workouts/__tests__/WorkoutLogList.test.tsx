@@ -101,25 +101,30 @@ describe("WorkoutLogList", () => {
       </ThemeProvider>
     );
 
-    expect(screen.getByRole("heading", { name: "2026-06-03" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "2026-06-02" })).toBeInTheDocument();
-    expect(screen.getAllByRole("heading", { name: "ベンチプレス" })).toHaveLength(2);
-    expect(screen.getByRole("heading", { name: "スクワット" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "2026-06-03の記録" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "2026-06-02の記録" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "2026-06-03" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "ベンチプレス" })).not.toBeInTheDocument();
     expect(screen.queryByText("1set 70kg x 8rep / 2set 72.5kg x 6rep")).not.toBeInTheDocument();
     expect(screen.queryByText("1set 100kg x 5rep")).not.toBeInTheDocument();
     expect(screen.queryByText("995kg")).not.toBeInTheDocument();
 
-    const juneThirdCard = screen.getByRole("heading", { name: "2026-06-03" }).closest("article");
+    const juneThirdCard = screen.getByRole("article", { name: "2026-06-03の記録" });
 
-    expect(juneThirdCard).not.toBeNull();
-    expect(within(juneThirdCard as HTMLElement).getByRole("heading", { name: "ベンチプレス" }))
-      .toBeInTheDocument();
-    expect(within(juneThirdCard as HTMLElement).getByRole("heading", { name: "スクワット" }))
-      .toBeInTheDocument();
-    expect(screen.queryByLabelText("日付")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("種目")).not.toBeInTheDocument();
-    expect(container.querySelectorAll('input[type="hidden"][name="trainedAt"]')).toHaveLength(3);
-    expect(container.querySelectorAll('input[type="hidden"][name="exerciseId"]')).toHaveLength(3);
+    expect(within(juneThirdCard).getAllByLabelText("種目")[0]).toHaveValue(
+      "11111111-1111-4111-8111-111111111111"
+    );
+    expect(within(juneThirdCard).getAllByLabelText("種目")[1]).toHaveValue(
+      "66666666-6666-4666-8666-666666666666"
+    );
+    expect(container.querySelectorAll('input[type="hidden"][name="trainedAt"]')).toHaveLength(0);
+    expect(container.querySelectorAll('input[type="hidden"][name="exerciseId"]')).toHaveLength(0);
+    expect(screen.getAllByLabelText("日付")).toHaveLength(3);
+    expect(screen.getAllByLabelText("日付")[0]).toHaveValue("2026-06-03");
+    expect(screen.getAllByLabelText("種目")).toHaveLength(3);
+    expect(screen.getAllByLabelText("種目")[0]).toHaveValue(
+      "11111111-1111-4111-8111-111111111111"
+    );
     expect(screen.getAllByLabelText("重量")).toHaveLength(4);
     expect(screen.getAllByLabelText("回数")).toHaveLength(4);
     expect(screen.getAllByRole("button", { name: "セット追加" })).toHaveLength(3);

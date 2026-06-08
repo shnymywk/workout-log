@@ -5,7 +5,7 @@ import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import { Button, EmptyState, Field, Input, Label, Textarea } from "@/components/primitives";
+import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import { deleteWorkoutLog, updateWorkoutLog } from "@/features/workouts/actions/workout-logs";
 import {
@@ -31,26 +31,17 @@ type WorkoutLogGroup = {
 
 const List = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.space[4]};
+  gap: ${({ theme }) => theme.space[10]};
 `;
 
 const DateCard = styled.article`
   display: grid;
   gap: ${({ theme }) => theme.space[4]};
-  border: 1px solid rgba(20, 32, 29, 0.1);
+  border: 1px solid rgba(24, 124, 112, 0.18);
   border-radius: ${({ theme }) => theme.radii.card};
-  background: #ffffff;
+  background: #edf6f4;
   box-shadow: rgba(12, 28, 24, 0.04) 0 12px 32px;
-  padding: ${({ theme }) => theme.space[4]};
-`;
-
-const DateTitle = styled.h3`
-  margin: 0;
-  color: #101816;
-  font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  padding: ${({ theme }) => theme.space[5]};
 `;
 
 const GroupLogs = styled.div`
@@ -61,22 +52,10 @@ const GroupLogs = styled.div`
 const LogItem = styled.section`
   display: grid;
   gap: ${({ theme }) => theme.space[3]};
-  border-top: 1px solid rgba(20, 32, 29, 0.1);
-  padding-top: ${({ theme }) => theme.space[4]};
-
-  &:first-child {
-    border-top: 0;
-    padding-top: 0;
-  }
-`;
-
-const LogTitle = styled.h4`
-  margin: 0;
-  color: #101816;
-  font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  border: 1px solid rgba(20, 32, 29, 0.08);
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #ffffff;
+  padding: ${({ theme }) => theme.space[4]};
 `;
 
 const EditForm = styled.form`
@@ -95,6 +74,15 @@ const EditForm = styled.form`
   textarea:focus-visible {
     border-color: #187c70;
     box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
+  }
+`;
+
+const MetaFields = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.space[3]};
+
+  @media (min-width: 834px) {
+    grid-template-columns: minmax(12rem, 0.45fr) minmax(0, 1fr);
   }
 `;
 
@@ -234,8 +222,10 @@ function groupWorkoutLogsByDate(workoutLogs: WorkoutLog[]): WorkoutLogGroup[] {
 }
 
 function WorkoutLogRow({
+  exercises,
   workoutLog
 }: {
+  exercises: Exercise[];
   workoutLog: WorkoutLog;
 }) {
   const [state, formAction, isUpdatePending] = useActionState(
@@ -254,6 +244,18 @@ function WorkoutLogRow({
       ),
     [setDetails]
   );
+  const exerciseOptions = exercises.some((exercise) => exercise.id === workoutLog.exercise_id)
+    ? exercises
+    : [
+        {
+          id: workoutLog.exercise_id,
+          name: workoutLog.exercise_name,
+          body_part_id: null,
+          created_at: workoutLog.created_at,
+          bodyParts: []
+        },
+        ...exercises
+      ];
 
   function updateSet(setId: string, nextValues: Partial<EditableSet>) {
     setSetDetails((currentSetDetails) =>
@@ -282,13 +284,36 @@ function WorkoutLogRow({
 
   return (
     <LogItem>
-      <LogTitle>{workoutLog.exercise_name}</LogTitle>
-
       <EditForm id={editFormId} action={formAction}>
         <input type="hidden" name="id" value={workoutLog.id} />
         <input type="hidden" name="setDetails" value={serializedSetDetails} />
-        <input type="hidden" name="trainedAt" value={workoutLog.trained_at} />
-        <input type="hidden" name="exerciseId" value={workoutLog.exercise_id} />
+        <MetaFields>
+          <Field>
+            <Label htmlFor={`${workoutLog.id}-trained-at`}>日付</Label>
+            <Input
+              id={`${workoutLog.id}-trained-at`}
+              name="trainedAt"
+              type="date"
+              defaultValue={workoutLog.trained_at}
+              required
+            />
+          </Field>
+          <Field>
+            <Label htmlFor={`${workoutLog.id}-exercise-id`}>種目</Label>
+            <Select
+              id={`${workoutLog.id}-exercise-id`}
+              name="exerciseId"
+              defaultValue={workoutLog.exercise_id}
+              required
+            >
+              {exerciseOptions.map((exercise) => (
+                <option key={exercise.id} value={exercise.id}>
+                  {exercise.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        </MetaFields>
         <SetRows>
           {setDetails.map((setDetail, index) => (
             <SetRow key={setDetail.id} data-testid="edit-set-row">
@@ -357,7 +382,7 @@ function WorkoutLogRow({
   );
 }
 
-export function WorkoutLogList({ workoutLogs }: WorkoutLogListProps) {
+export function WorkoutLogList({ exercises, workoutLogs }: WorkoutLogListProps) {
   if (workoutLogs.length === 0) {
     return <EmptyState>条件に一致するトレーニング記録がありません。</EmptyState>;
   }
@@ -367,11 +392,10 @@ export function WorkoutLogList({ workoutLogs }: WorkoutLogListProps) {
   return (
     <List>
       {workoutLogGroups.map((workoutLogGroup) => (
-        <DateCard key={workoutLogGroup.trainedAt}>
-          <DateTitle>{workoutLogGroup.trainedAt}</DateTitle>
+        <DateCard key={workoutLogGroup.trainedAt} aria-label={`${workoutLogGroup.trainedAt}の記録`}>
           <GroupLogs>
             {workoutLogGroup.workoutLogs.map((workoutLog) => (
-              <WorkoutLogRow key={workoutLog.id} workoutLog={workoutLog} />
+              <WorkoutLogRow key={workoutLog.id} exercises={exercises} workoutLog={workoutLog} />
             ))}
           </GroupLogs>
         </DateCard>
