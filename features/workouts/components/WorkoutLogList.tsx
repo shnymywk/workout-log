@@ -5,10 +5,9 @@ import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/components/primitives";
+import { Button, EmptyState, Field, Input, Label, Textarea } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import { deleteWorkoutLog, updateWorkoutLog } from "@/features/workouts/actions/workout-logs";
-import { calculateWorkoutLogVolume } from "@/features/workouts/lib/volume";
 import {
   initialWorkoutLogActionState,
   type WorkoutLog
@@ -25,12 +24,17 @@ type EditableSet = {
   reps: string;
 };
 
+type WorkoutLogGroup = {
+  trainedAt: string;
+  workoutLogs: WorkoutLog[];
+};
+
 const List = styled.div`
   display: grid;
   gap: ${({ theme }) => theme.space[4]};
 `;
 
-const Row = styled.article`
+const DateCard = styled.article`
   display: grid;
   gap: ${({ theme }) => theme.space[4]};
   border: 1px solid rgba(20, 32, 29, 0.1);
@@ -40,18 +44,7 @@ const Row = styled.article`
   padding: ${({ theme }) => theme.space[4]};
 `;
 
-const Summary = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.space[4]};
-
-  @media (max-width: 833px) {
-    display: grid;
-  }
-`;
-
-const SummaryTitle = styled.h3`
+const DateTitle = styled.h3`
   margin: 0;
   color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
@@ -60,24 +53,30 @@ const SummaryTitle = styled.h3`
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
-const SummaryMeta = styled.p`
-  margin: ${({ theme }) => theme.space[1]} 0 0;
-  color: #66726f;
-  font-size: ${({ theme }) => theme.fontSizes.caption};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+const GroupLogs = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.space[4]};
 `;
 
-const Volume = styled.p`
+const LogItem = styled.section`
+  display: grid;
+  gap: ${({ theme }) => theme.space[3]};
+  border-top: 1px solid rgba(20, 32, 29, 0.1);
+  padding-top: ${({ theme }) => theme.space[4]};
+
+  &:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+`;
+
+const LogTitle = styled.h4`
   margin: 0;
-  border: 1px solid rgba(24, 124, 112, 0.18);
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: #edf6f4;
-  color: #187c70;
+  color: #101816;
   font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.25rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
-  padding: 0.375rem 0.75rem;
 `;
 
 const EditForm = styled.form`
@@ -96,16 +95,6 @@ const EditForm = styled.form`
   textarea:focus-visible {
     border-color: #187c70;
     box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
-  }
-`;
-
-const EditGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: ${({ theme }) => theme.space[3]};
-
-  @media (max-width: 833px) {
-    grid-template-columns: 1fr;
   }
 `;
 
@@ -205,10 +194,6 @@ function DeleteButton() {
   );
 }
 
-function formatWeight(weight: number) {
-  return Number.isInteger(weight) ? weight.toString() : weight.toFixed(2).replace(/0+$/, "");
-}
-
 function buildEditableSets(workoutLog: WorkoutLog): EditableSet[] {
   if (workoutLog.workout_log_sets && workoutLog.workout_log_sets.length > 0) {
     return [...workoutLog.workout_log_sets]
@@ -227,20 +212,28 @@ function buildEditableSets(workoutLog: WorkoutLog): EditableSet[] {
   }));
 }
 
-function formatSetSummary(setDetails: EditableSet[]) {
-  return setDetails
-    .map(
-      (setDetail, index) =>
-        `${index + 1}set ${formatWeight(Number(setDetail.weight))}kg x ${setDetail.reps}rep`
-    )
-    .join(" / ");
+function groupWorkoutLogsByDate(workoutLogs: WorkoutLog[]): WorkoutLogGroup[] {
+  const groups = new Map<string, WorkoutLog[]>();
+
+  for (const workoutLog of workoutLogs) {
+    const group = groups.get(workoutLog.trained_at);
+
+    if (group) {
+      group.push(workoutLog);
+    } else {
+      groups.set(workoutLog.trained_at, [workoutLog]);
+    }
+  }
+
+  return Array.from(groups, ([trainedAt, groupedWorkoutLogs]) => ({
+    trainedAt,
+    workoutLogs: groupedWorkoutLogs
+  }));
 }
 
 function WorkoutLogRow({
-  exercises,
   workoutLog
 }: {
-  exercises: Exercise[];
   workoutLog: WorkoutLog;
 }) {
   const [state, formAction, isUpdatePending] = useActionState(
@@ -259,15 +252,6 @@ function WorkoutLogRow({
       ),
     [setDetails]
   );
-  const volume = calculateWorkoutLogVolume({
-    ...workoutLog,
-    workout_log_sets: setDetails.map((setDetail, index) => ({
-      id: setDetail.id,
-      set_number: index + 1,
-      weight: Number(setDetail.weight),
-      reps: Number(setDetail.reps)
-    }))
-  });
 
   function updateSet(setId: string, nextValues: Partial<EditableSet>) {
     setSetDetails((currentSetDetails) =>
@@ -282,8 +266,8 @@ function WorkoutLogRow({
       ...currentSetDetails,
       {
         id: `${workoutLog.id}-set-${Date.now()}-${currentSetDetails.length + 1}`,
-        weight: "0",
-        reps: "0"
+        weight: "",
+        reps: ""
       }
     ]);
   }
@@ -295,45 +279,14 @@ function WorkoutLogRow({
   }
 
   return (
-    <Row>
-      <Summary>
-        <div>
-          <SummaryTitle>{workoutLog.exercise_name}</SummaryTitle>
-          <SummaryMeta>
-            {workoutLog.trained_at} / {formatSetSummary(setDetails)}
-          </SummaryMeta>
-        </div>
-        <Volume>{volume.toLocaleString()}kg</Volume>
-      </Summary>
+    <LogItem>
+      <LogTitle>{workoutLog.exercise_name}</LogTitle>
 
       <EditForm id={editFormId} action={formAction}>
         <input type="hidden" name="id" value={workoutLog.id} />
         <input type="hidden" name="setDetails" value={serializedSetDetails} />
-        <EditGrid>
-          <Field>
-            <Label htmlFor={`${workoutLog.id}-trained-at`}>日付</Label>
-            <Input
-              id={`${workoutLog.id}-trained-at`}
-              name="trainedAt"
-              type="date"
-              defaultValue={workoutLog.trained_at}
-            />
-          </Field>
-          <Field>
-            <Label htmlFor={`${workoutLog.id}-exercise-id`}>種目</Label>
-            <Select
-              id={`${workoutLog.id}-exercise-id`}
-              name="exerciseId"
-              defaultValue={workoutLog.exercise_id}
-            >
-              {exercises.map((exercise) => (
-                <option key={exercise.id} value={exercise.id}>
-                  {exercise.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </EditGrid>
+        <input type="hidden" name="trainedAt" value={workoutLog.trained_at} />
+        <input type="hidden" name="exerciseId" value={workoutLog.exercise_id} />
         <SetRows>
           {setDetails.map((setDetail, index) => (
             <SetRow key={setDetail.id} data-testid="edit-set-row">
@@ -344,6 +297,7 @@ function WorkoutLogRow({
                   id={`${setDetail.id}-weight`}
                   aria-label={index === 0 ? undefined : "重量"}
                   inputMode="decimal"
+                  placeholder="70"
                   value={setDetail.weight}
                   onChange={(event) => updateSet(setDetail.id, { weight: event.target.value })}
                 />
@@ -354,6 +308,7 @@ function WorkoutLogRow({
                   id={`${setDetail.id}-reps`}
                   aria-label={index === 0 ? undefined : "回数"}
                   inputMode="numeric"
+                  placeholder="8"
                   value={setDetail.reps}
                   onChange={(event) => updateSet(setDetail.id, { reps: event.target.value })}
                 />
@@ -396,19 +351,28 @@ function WorkoutLogRow({
           <DeleteButton />
         </DeleteForm>
       </RowActions>
-    </Row>
+    </LogItem>
   );
 }
 
-export function WorkoutLogList({ exercises, workoutLogs }: WorkoutLogListProps) {
+export function WorkoutLogList({ workoutLogs }: WorkoutLogListProps) {
   if (workoutLogs.length === 0) {
     return <EmptyState>条件に一致するトレーニング記録がありません。</EmptyState>;
   }
 
+  const workoutLogGroups = groupWorkoutLogsByDate(workoutLogs);
+
   return (
     <List>
-      {workoutLogs.map((workoutLog) => (
-        <WorkoutLogRow key={workoutLog.id} exercises={exercises} workoutLog={workoutLog} />
+      {workoutLogGroups.map((workoutLogGroup) => (
+        <DateCard key={workoutLogGroup.trainedAt}>
+          <DateTitle>{workoutLogGroup.trainedAt}</DateTitle>
+          <GroupLogs>
+            {workoutLogGroup.workoutLogs.map((workoutLog) => (
+              <WorkoutLogRow key={workoutLog.id} workoutLog={workoutLog} />
+            ))}
+          </GroupLogs>
+        </DateCard>
       ))}
     </List>
   );
