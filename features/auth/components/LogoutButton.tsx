@@ -34,7 +34,7 @@ function SubmitButton({ compact = false, variant = "secondary" }: LogoutButtonPr
       aria-label={compact ? "ログアウト" : undefined}
       $compact={compact}
     >
-      {compact ? <LogOut size={18} strokeWidth={2.2} aria-hidden="true" /> : null}
+      <LogOut size={18} strokeWidth={2.2} aria-hidden="true" />
       {compact ? null : pending ? "ログアウト中" : "ログアウト"}
     </LogoutActionButton>
   );
