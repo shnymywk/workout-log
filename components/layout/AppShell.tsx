@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 
 import { DesktopSidebar } from "@/components/layout/DesktopSidebar";
@@ -12,13 +13,15 @@ type AppShellProps = {
   ownerEmail: string | null;
 };
 
-const Shell = styled.div`
+const Shell = styled.div<{ $sidebarCollapsed: boolean }>`
   min-height: 100vh;
   background: #f3f6f5;
 
   @media (min-width: 1024px) {
     display: grid;
-    grid-template-columns: 17.5rem minmax(0, 1fr);
+    grid-template-columns: ${({ $sidebarCollapsed }) =>
+      $sidebarCollapsed ? "5.5rem minmax(0, 1fr)" : "19.5rem minmax(0, 1fr)"};
+    transition: grid-template-columns 180ms ease;
   }
 `;
 
@@ -39,10 +42,16 @@ const MainInner = styled.div`
 
 export function AppShell({ children, ownerEmail }: AppShellProps) {
   const pathname = usePathname();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <Shell>
-      <DesktopSidebar ownerEmail={ownerEmail} pathname={pathname} />
+    <Shell $sidebarCollapsed={sidebarCollapsed}>
+      <DesktopSidebar
+        collapsed={sidebarCollapsed}
+        ownerEmail={ownerEmail}
+        pathname={pathname}
+        onToggleCollapsed={() => setSidebarCollapsed((currentValue) => !currentValue)}
+      />
 
       <div>
         <MobileNavigation pathname={pathname} />

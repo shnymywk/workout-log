@@ -5,7 +5,9 @@ import { DesktopSidebar } from "@/components/layout/DesktopSidebar";
 import { theme } from "@/lib/styles/theme";
 
 jest.mock("@/features/auth/components/LogoutButton", () => ({
-  LogoutButton: () => <button type="button">ログアウト</button>
+  LogoutButton: ({ compact }: { compact?: boolean }) => (
+    <button type="button">{compact ? "ログアウト compact" : "ログアウト"}</button>
+  )
 }));
 
 describe("DesktopSidebar", () => {
@@ -28,5 +30,18 @@ describe("DesktopSidebar", () => {
     );
 
     expect(screen.getByText("メールアドレス未取得")).toBeInTheDocument();
+  });
+
+  it("keeps navigation accessible when collapsed", () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <DesktopSidebar collapsed ownerEmail="owner@example.com" pathname="/dashboard" />
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole("button", { hidden: true, name: "サイドバーを展開" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { hidden: true, name: "ダッシュボード" })).toBeInTheDocument();
+    expect(screen.getByText("ログアウト compact")).toBeInTheDocument();
+    expect(screen.queryByText("owner@example.com")).not.toBeInTheDocument();
   });
 });
