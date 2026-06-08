@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { exerciseFormSchema } from "@/features/exercises/schemas/exercise-schema";
 import type { ExerciseActionState } from "@/features/exercises/types/exercise";
 import { createClient } from "@/lib/supabase/server";
+import type { TablesInsert } from "@/types/database";
 
 function getFirstValidationMessage(errorMessage: string | undefined) {
   return errorMessage ?? "入力内容を確認してください。";
@@ -32,14 +33,53 @@ function mapExerciseMutationError(error: { code?: string }) {
   return "種目を保存できませんでした。データベース設定を確認してください。";
 }
 
+function getExerciseFormValues(formData: FormData) {
+  return {
+    name: formData.get("name"),
+    bodyPartIds: formData.getAll("bodyPartIds").map((bodyPartId) => String(bodyPartId))
+  };
+}
+
+async function syncExerciseBodyParts({
+  bodyPartIds,
+  exerciseId,
+  supabase,
+  userId
+}: {
+  bodyPartIds: string[];
+  exerciseId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const { error: deleteError } = await supabase
+    .from("exercise_body_parts")
+    .delete()
+    .eq("exercise_id", exerciseId)
+    .eq("user_id", userId);
+
+  if (deleteError) {
+    return deleteError;
+  }
+
+  if (bodyPartIds.length === 0) {
+    return null;
+  }
+
+  const rows: TablesInsert<"exercise_body_parts">[] = bodyPartIds.map((bodyPartId) => ({
+    exercise_id: exerciseId,
+    body_part_id: bodyPartId,
+    user_id: userId
+  }));
+  const { error: insertError } = await supabase.from("exercise_body_parts").insert(rows);
+
+  return insertError;
+}
+
 export async function createExercise(
   _previousState: ExerciseActionState,
   formData: FormData
 ): Promise<ExerciseActionState> {
-  const parsed = exerciseFormSchema.safeParse({
-    name: formData.get("name"),
-    bodyPartId: formData.get("bodyPartId")
-  });
+  const parsed = exerciseFormSchema.safeParse(getExerciseFormValues(formData));
 
   if (!parsed.success) {
     return {
@@ -58,17 +98,39 @@ export async function createExercise(
     };
   }
 
-  const { error } = await supabase.from("exercises").insert({
-    name: parsed.data.name,
-    body_part_id: parsed.data.bodyPartId,
-    user_id: userData.user.id
-  });
+  const { data: exercise, error } = await supabase
+    .from("exercises")
+    .insert({
+      name: parsed.data.name,
+      body_part_id: parsed.data.bodyPartIds[0] ?? null,
+      user_id: userData.user.id
+    })
+    .select("id")
+    .single();
 
   if (error) {
     console.error("Failed to create exercise", error);
 
     return {
       error: mapExerciseMutationError(error),
+      success: null
+    };
+  }
+
+  const exerciseBodyPartsError = await syncExerciseBodyParts({
+    bodyPartIds: parsed.data.bodyPartIds,
+    exerciseId: exercise.id,
+    supabase,
+    userId: userData.user.id
+  });
+
+  if (exerciseBodyPartsError) {
+    console.error("Failed to sync exercise body parts", exerciseBodyPartsError);
+
+    await supabase.from("exercises").delete().eq("id", exercise.id).eq("user_id", userData.user.id);
+
+    return {
+      error: mapExerciseMutationError(exerciseBodyPartsError),
       success: null
     };
   }
@@ -94,10 +156,7 @@ export async function updateExercise(
     };
   }
 
-  const parsed = exerciseFormSchema.safeParse({
-    name: formData.get("name"),
-    bodyPartId: formData.get("bodyPartId")
-  });
+  const parsed = exerciseFormSchema.safeParse(getExerciseFormValues(formData));
 
   if (!parsed.success) {
     return {
@@ -120,7 +179,7 @@ export async function updateExercise(
     .from("exercises")
     .update({
       name: parsed.data.name,
-      body_part_id: parsed.data.bodyPartId,
+      body_part_id: parsed.data.bodyPartIds[0] ?? null,
       updated_at: new Date().toISOString()
     })
     .eq("id", id)
@@ -131,6 +190,22 @@ export async function updateExercise(
 
     return {
       error: mapExerciseMutationError(error),
+      success: null
+    };
+  }
+
+  const exerciseBodyPartsError = await syncExerciseBodyParts({
+    bodyPartIds: parsed.data.bodyPartIds,
+    exerciseId: id,
+    supabase,
+    userId: userData.user.id
+  });
+
+  if (exerciseBodyPartsError) {
+    console.error("Failed to sync exercise body parts", exerciseBodyPartsError);
+
+    return {
+      error: mapExerciseMutationError(exerciseBodyPartsError),
       success: null
     };
   }

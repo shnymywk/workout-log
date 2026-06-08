@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { createExercise } from "@/features/exercises/actions/exercises";
 import type { BodyPart } from "@/features/exercises/types/body-part";
 import { initialExerciseActionState } from "@/features/exercises/types/exercise";
-import { Button, Field, Input, Label, Select } from "@/components/primitives";
+import { Button, Field, Input, Label } from "@/components/primitives";
 
 type ExerciseCreateFormProps = {
   bodyParts: BodyPart[];
@@ -17,14 +17,12 @@ const Form = styled.form`
   display: grid;
   gap: ${({ theme }) => theme.space[5]};
 
-  input,
-  select {
+  input {
     border-color: rgba(20, 32, 29, 0.14);
     background: #f7faf9;
   }
 
-  input:focus-visible,
-  select:focus-visible {
+  input:focus-visible {
     border-color: #187c70;
     box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
   }
@@ -32,17 +30,77 @@ const Form = styled.form`
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.5fr);
   gap: ${({ theme }) => theme.space[3]};
-
-  @media (max-width: 833px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
+`;
+
+const CheckboxGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const CheckboxFieldset = styled.fieldset`
+  display: grid;
+  gap: ${({ theme }) => theme.space[2]};
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+`;
+
+const CheckboxLegend = styled.legend`
+  margin: 0 0 ${({ theme }) => theme.space[2]};
+  padding: 0;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 700;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  line-height: 1.4;
+`;
+
+const CheckboxLabel = styled.label`
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  input:checked + span {
+    border-color: rgba(24, 124, 112, 0.28);
+    background: #187c70;
+    color: #ffffff;
+  }
+`;
+
+const CheckboxText = styled.span`
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border: 1px solid rgba(20, 32, 29, 0.14);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: #ffffff;
+  padding: 0.625rem 0.875rem;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 700;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 `;
 
 const Message = styled.p<{ $tone: "success" | "error" }>`
@@ -82,17 +140,17 @@ export function ExerciseCreateForm({ bodyParts }: ExerciseCreateFormProps) {
           <Label htmlFor="exercise-name">種目名</Label>
           <Input id="exercise-name" name="name" placeholder="ベンチプレスなど" required />
         </Field>
-        <Field>
-          <Label htmlFor="exercise-body-part">部位</Label>
-          <Select id="exercise-body-part" name="bodyPartId" defaultValue="">
-            <option value="">未分類</option>
+        <CheckboxFieldset>
+          <CheckboxLegend>部位</CheckboxLegend>
+          <CheckboxGroup>
             {bodyParts.map((bodyPart) => (
-              <option key={bodyPart.id} value={bodyPart.id}>
-                {bodyPart.name}
-              </option>
+              <CheckboxLabel key={bodyPart.id}>
+                <input name="bodyPartIds" type="checkbox" value={bodyPart.id} />
+                <CheckboxText>{bodyPart.name}</CheckboxText>
+              </CheckboxLabel>
             ))}
-          </Select>
-        </Field>
+          </CheckboxGroup>
+        </CheckboxFieldset>
       </FormGrid>
       {state.error ? (
         <Message $tone="error" role="alert">

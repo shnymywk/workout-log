@@ -96,6 +96,46 @@ export type Database = {
           }
         ];
       };
+      exercise_body_parts: {
+        Row: {
+          exercise_id: string;
+          body_part_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          exercise_id: string;
+          body_part_id: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Update: {
+          exercise_id?: string;
+          body_part_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "exercise_body_parts_body_part_id_fkey";
+            columns: ["body_part_id"];
+            referencedRelation: "body_parts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "exercise_body_parts_exercise_id_fkey";
+            columns: ["exercise_id"];
+            referencedRelation: "exercises";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "exercise_body_parts_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       workout_logs: {
         Row: {
           id: string;

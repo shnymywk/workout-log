@@ -20,7 +20,7 @@ const List = styled.div`
 const Row = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: ${({ theme }) => theme.space[3]};
+  gap: ${({ theme }) => theme.space[2]};
   align-items: start;
   border: 1px solid rgba(20, 32, 29, 0.1);
   border-radius: ${({ theme }) => theme.radii.card};
@@ -48,19 +48,15 @@ const EditForm = styled.form`
   }
 `;
 
-const EditControls = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: ${({ theme }) => theme.space[2]};
-
-  @media (max-width: 833px) {
-    grid-template-columns: 1fr;
-  }
+const DeleteForm = styled.form`
+  display: contents;
 `;
 
-const DeleteForm = styled.form`
+const RowActions = styled.div`
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: ${({ theme }) => theme.space[2]};
 `;
 
 const Message = styled.p<{ $tone: "success" | "error" }>`
@@ -90,11 +86,9 @@ const DeleteActionButton = styled(Button)`
   }
 `;
 
-function UpdateButton() {
-  const { pending } = useFormStatus();
-
+function UpdateButton({ formId, pending }: { formId: string; pending: boolean }) {
   return (
-    <SaveActionButton type="submit" variant="secondary" disabled={pending}>
+    <SaveActionButton type="submit" variant="secondary" form={formId} disabled={pending}>
       {pending ? "保存中" : "保存"}
     </SaveActionButton>
   );
@@ -111,16 +105,17 @@ function DeleteButton() {
 }
 
 function BodyPartRow({ bodyPart }: { bodyPart: BodyPart }) {
-  const [state, formAction] = useActionState(updateBodyPart, initialBodyPartActionState);
+  const [state, formAction, isUpdatePending] = useActionState(
+    updateBodyPart,
+    initialBodyPartActionState
+  );
+  const editFormId = `${bodyPart.id}-edit-form`;
 
   return (
     <Row>
-      <EditForm action={formAction}>
+      <EditForm id={editFormId} action={formAction}>
         <input type="hidden" name="id" value={bodyPart.id} />
-        <EditControls>
-          <Input name="name" defaultValue={bodyPart.name} aria-label={`${bodyPart.name}の部位名`} />
-          <UpdateButton />
-        </EditControls>
+        <Input name="name" defaultValue={bodyPart.name} aria-label={`${bodyPart.name}の部位名`} />
         {state.error ? (
           <Message $tone="error" role="alert">
             {state.error}
@@ -129,10 +124,13 @@ function BodyPartRow({ bodyPart }: { bodyPart: BodyPart }) {
         {state.success ? <Message $tone="success">{state.success}</Message> : null}
       </EditForm>
 
-      <DeleteForm action={deleteBodyPart}>
-        <input type="hidden" name="id" value={bodyPart.id} />
-        <DeleteButton />
-      </DeleteForm>
+      <RowActions data-testid="body-part-row-actions">
+        <UpdateButton formId={editFormId} pending={isUpdatePending} />
+        <DeleteForm action={deleteBodyPart}>
+          <input type="hidden" name="id" value={bodyPart.id} />
+          <DeleteButton />
+        </DeleteForm>
+      </RowActions>
     </Row>
   );
 }

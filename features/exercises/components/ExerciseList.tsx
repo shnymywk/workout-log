@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { deleteExercise, updateExercise } from "@/features/exercises/actions/exercises";
 import type { BodyPart } from "@/features/exercises/types/body-part";
 import { initialExerciseActionState, type Exercise } from "@/features/exercises/types/exercise";
-import { Button, EmptyState, Input, Select } from "@/components/primitives";
+import { Button, EmptyState, Input } from "@/components/primitives";
 
 type ExerciseListProps = {
   bodyParts: BodyPart[];
@@ -23,7 +23,7 @@ const Row = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: ${({ theme }) => theme.space[3]};
-  align-items: start;
+  align-items: center;
   border: 1px solid rgba(20, 32, 29, 0.1);
   border-radius: ${({ theme }) => theme.radii.card};
   background: #ffffff;
@@ -37,34 +37,114 @@ const Row = styled.div`
 
 const EditForm = styled.form`
   display: grid;
-  gap: ${({ theme }) => theme.space[2]};
+  grid-template-columns: minmax(12rem, 0.65fr) minmax(24rem, 1.35fr);
+  gap: ${({ theme }) => theme.space[3]};
+  align-items: center;
+  min-width: 0;
 
-  input,
-  select {
+  input {
     border-color: rgba(20, 32, 29, 0.14);
     background: #f7faf9;
   }
 
-  input:focus-visible,
-  select:focus-visible {
+  input:focus-visible {
     border-color: #187c70;
     box-shadow: 0 0 0 3px rgba(24, 124, 112, 0.16);
   }
-`;
 
-const EditControls = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.45fr) auto;
-  gap: ${({ theme }) => theme.space[2]};
-
-  @media (max-width: 833px) {
+  @media (max-width: 1040px) {
     grid-template-columns: 1fr;
   }
 `;
 
+const EditField = styled.div`
+  display: grid;
+  gap: ${({ theme }) => theme.space[1]};
+  min-width: 0;
+`;
+
 const DeleteForm = styled.form`
+  display: contents;
+`;
+
+const FieldCaption = styled.span`
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 700;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+`;
+
+const BodyPartHeader = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[1]};
+`;
+
+const BodyPartSummary = styled.p`
+  margin: 0;
+  color: #66726f;
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 700;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+`;
+
+const CheckboxGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.space[2]};
+`;
+
+const CheckboxLabel = styled.label`
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  input:checked + span {
+    border-color: rgba(24, 124, 112, 0.28);
+    background: #187c70;
+    color: #ffffff;
+  }
+`;
+
+const CheckboxText = styled.span`
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border: 1px solid rgba(20, 32, 29, 0.14);
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: #ffffff;
+  padding: 0.625rem 0.875rem;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 700;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+`;
+
+const RowActions = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  align-items: center;
+  gap: ${({ theme }) => theme.space[2]};
+
+  @media (max-width: 833px) {
+    justify-content: flex-start;
+  }
 `;
 
 const Message = styled.p<{ $tone: "success" | "error" }>`
@@ -94,11 +174,9 @@ const DeleteActionButton = styled(Button)`
   }
 `;
 
-function UpdateButton() {
-  const { pending } = useFormStatus();
-
+function UpdateButton({ formId, pending }: { formId: string; pending: boolean }) {
   return (
-    <SaveActionButton type="submit" variant="secondary" disabled={pending}>
+    <SaveActionButton type="submit" variant="secondary" form={formId} disabled={pending}>
       {pending ? "保存中" : "保存"}
     </SaveActionButton>
   );
@@ -115,28 +193,44 @@ function DeleteButton() {
 }
 
 function ExerciseRow({ bodyParts, exercise }: { bodyParts: BodyPart[]; exercise: Exercise }) {
-  const [state, formAction] = useActionState(updateExercise, initialExerciseActionState);
+  const [state, formAction, isUpdatePending] = useActionState(
+    updateExercise,
+    initialExerciseActionState
+  );
+  const editFormId = `${exercise.id}-edit-form`;
+  const selectedBodyPartIds = new Set(exercise.bodyParts.map((bodyPart) => bodyPart.id));
+  const bodyPartNames =
+    exercise.bodyParts.length > 0
+      ? exercise.bodyParts.map((bodyPart) => bodyPart.name).join("・")
+      : "未分類";
 
   return (
     <Row>
-      <EditForm action={formAction}>
+      <EditForm id={editFormId} action={formAction}>
         <input type="hidden" name="id" value={exercise.id} />
-        <EditControls>
+        <EditField>
+          <FieldCaption>種目名</FieldCaption>
           <Input name="name" defaultValue={exercise.name} aria-label={`${exercise.name}の種目名`} />
-          <Select
-            name="bodyPartId"
-            defaultValue={exercise.body_part_id ?? ""}
-            aria-label={`${exercise.name}の部位`}
-          >
-            <option value="">未分類</option>
+        </EditField>
+        <EditField>
+          <BodyPartHeader>
+            <FieldCaption>部位</FieldCaption>
+            <BodyPartSummary>{bodyPartNames}</BodyPartSummary>
+          </BodyPartHeader>
+          <CheckboxGroup aria-label={`${exercise.name}の部位`}>
             {bodyParts.map((bodyPart) => (
-              <option key={bodyPart.id} value={bodyPart.id}>
-                {bodyPart.name}
-              </option>
+              <CheckboxLabel key={bodyPart.id}>
+                <input
+                  name="bodyPartIds"
+                  type="checkbox"
+                  value={bodyPart.id}
+                  defaultChecked={selectedBodyPartIds.has(bodyPart.id)}
+                />
+                <CheckboxText>{bodyPart.name}</CheckboxText>
+              </CheckboxLabel>
             ))}
-          </Select>
-          <UpdateButton />
-        </EditControls>
+          </CheckboxGroup>
+        </EditField>
         {state.error ? (
           <Message $tone="error" role="alert">
             {state.error}
@@ -145,10 +239,13 @@ function ExerciseRow({ bodyParts, exercise }: { bodyParts: BodyPart[]; exercise:
         {state.success ? <Message $tone="success">{state.success}</Message> : null}
       </EditForm>
 
-      <DeleteForm action={deleteExercise}>
-        <input type="hidden" name="id" value={exercise.id} />
-        <DeleteButton />
-      </DeleteForm>
+      <RowActions data-testid="exercise-row-actions">
+        <UpdateButton formId={editFormId} pending={isUpdatePending} />
+        <DeleteForm action={deleteExercise}>
+          <input type="hidden" name="id" value={exercise.id} />
+          <DeleteButton />
+        </DeleteForm>
+      </RowActions>
     </Row>
   );
 }
