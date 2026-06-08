@@ -121,7 +121,7 @@ const SetRow = styled.div`
   align-items: end;
 
   @media (max-width: 833px) {
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    grid-template-columns: 2rem minmax(5.5rem, 1fr) minmax(5.5rem, 1fr) 2.75rem;
   }
 `;
 
@@ -336,21 +336,23 @@ function WorkoutLogRow({
         </EditGrid>
         <SetRows>
           {setDetails.map((setDetail, index) => (
-            <SetRow key={setDetail.id}>
+            <SetRow key={setDetail.id} data-testid="edit-set-row">
               <SetNumber>{index + 1}</SetNumber>
               <Field>
-                <Label htmlFor={`${setDetail.id}-weight`}>重量</Label>
+                {index === 0 ? <Label htmlFor={`${setDetail.id}-weight`}>重量</Label> : null}
                 <Input
                   id={`${setDetail.id}-weight`}
+                  aria-label={index === 0 ? undefined : "重量"}
                   inputMode="decimal"
                   value={setDetail.weight}
                   onChange={(event) => updateSet(setDetail.id, { weight: event.target.value })}
                 />
               </Field>
               <Field>
-                <Label htmlFor={`${setDetail.id}-reps`}>回数</Label>
+                {index === 0 ? <Label htmlFor={`${setDetail.id}-reps`}>回数</Label> : null}
                 <Input
                   id={`${setDetail.id}-reps`}
+                  aria-label={index === 0 ? undefined : "回数"}
                   inputMode="numeric"
                   value={setDetail.reps}
                   onChange={(event) => updateSet(setDetail.id, { reps: event.target.value })}
