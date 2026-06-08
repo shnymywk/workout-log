@@ -2,8 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
@@ -11,7 +10,10 @@ import { Button, EmptyState, Field, Input, Label, Select, Textarea } from "@/com
 import type { Exercise } from "@/features/exercises/types/exercise";
 import { createWorkoutLog } from "@/features/workouts/actions/workout-logs";
 import { calculateWorkoutSetDetailsVolume } from "@/features/workouts/lib/volume";
-import { initialWorkoutLogActionState } from "@/features/workouts/types/workout-log";
+import {
+  initialWorkoutLogActionState,
+  type WorkoutLogActionState
+} from "@/features/workouts/types/workout-log";
 
 type WorkoutLogCreateFormProps = {
   exercises: Exercise[];
@@ -136,7 +138,7 @@ const SetRow = styled.div`
   align-items: end;
 
   @media (max-width: 833px) {
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    grid-template-columns: 2rem minmax(5.5rem, 1fr) minmax(5.5rem, 1fr) 2.75rem;
   }
 `;
 
@@ -187,7 +189,10 @@ const PrimarySubmitButton = styled(Button)`
 `;
 
 function getTodayDateValue() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+
+  return localDate.toISOString().slice(0, 10);
 }
 
 function createDraftId() {
@@ -201,8 +206,8 @@ function createDraftId() {
 function createDraftSet(): DraftSet {
   return {
     id: createDraftId(),
-    weight: "0",
-    reps: "0"
+    weight: "",
+    reps: ""
   };
 }
 
@@ -225,11 +230,29 @@ function SubmitButton() {
   );
 }
 
+function createInitialWorkoutLogs(exerciseId: string) {
+  return [createDraftWorkoutLog(exerciseId)];
+}
+
 export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
-  const [state, formAction] = useActionState(createWorkoutLog, initialWorkoutLogActionState);
-  const [workoutLogs, setWorkoutLogs] = useState<DraftWorkoutLog[]>(() => [
-    createDraftWorkoutLog(exercises[0]?.id ?? "")
-  ]);
+  const initialExerciseId = exercises[0]?.id ?? "";
+  const [trainedAt, setTrainedAt] = useState(getTodayDateValue);
+  const [workoutLogs, setWorkoutLogs] = useState<DraftWorkoutLog[]>(() =>
+    createInitialWorkoutLogs(initialExerciseId)
+  );
+  const [state, formAction] = useActionState(
+    async (previousState: WorkoutLogActionState, formData: FormData) => {
+      const nextState = await createWorkoutLog(previousState, formData);
+
+      if (nextState.success) {
+        setTrainedAt(getTodayDateValue());
+        setWorkoutLogs(createInitialWorkoutLogs(initialExerciseId));
+      }
+
+      return nextState;
+    },
+    initialWorkoutLogActionState
+  );
   const serializedWorkoutLogs = useMemo(
     () =>
       JSON.stringify(
@@ -271,7 +294,7 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
   function addWorkoutLog() {
     setWorkoutLogs((currentWorkoutLogs) => [
       ...currentWorkoutLogs,
-      createDraftWorkoutLog(exercises[0]?.id ?? "")
+      createDraftWorkoutLog(initialExerciseId)
     ]);
   }
 
@@ -329,7 +352,13 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
       <FormGrid>
         <Field>
           <Label htmlFor="trained-at">日付</Label>
-          <Input id="trained-at" name="trainedAt" type="date" defaultValue={getTodayDateValue()} />
+          <Input
+            id="trained-at"
+            name="trainedAt"
+            type="date"
+            value={trainedAt}
+            onChange={(event) => setTrainedAt(event.target.value)}
+          />
         </Field>
 
         <VolumePreview aria-live="polite">
@@ -376,12 +405,13 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
 
             <SetRows>
               {workoutLog.sets.map((set, setIndex) => (
-                <SetRow key={set.id}>
+                <SetRow key={set.id} data-testid="set-row">
                   <SetNumber>{setIndex + 1}</SetNumber>
                   <Field>
-                    <Label htmlFor={`${set.id}-weight`}>重量</Label>
+                    {setIndex === 0 ? <Label htmlFor={`${set.id}-weight`}>重量</Label> : null}
                     <Input
                       id={`${set.id}-weight`}
+                      aria-label={setIndex === 0 ? undefined : "重量"}
                       inputMode="decimal"
                       placeholder="70"
                       value={set.weight}
@@ -391,9 +421,10 @@ export function WorkoutLogCreateForm({ exercises }: WorkoutLogCreateFormProps) {
                     />
                   </Field>
                   <Field>
-                    <Label htmlFor={`${set.id}-reps`}>回数</Label>
+                    {setIndex === 0 ? <Label htmlFor={`${set.id}-reps`}>回数</Label> : null}
                     <Input
                       id={`${set.id}-reps`}
+                      aria-label={setIndex === 0 ? undefined : "回数"}
                       inputMode="numeric"
                       placeholder="8"
                       value={set.reps}

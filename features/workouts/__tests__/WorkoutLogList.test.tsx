@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
 
 import { WorkoutLogList } from "@/features/workouts/components/WorkoutLogList";
@@ -65,6 +65,28 @@ describe("WorkoutLogList", () => {
     expect(screen.getAllByLabelText("回数")).toHaveLength(2);
     expect(screen.getByRole("button", { name: "セット追加" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("フォームは安定")).toBeInTheDocument();
+  });
+
+  it("keeps edit set controls in one row for the mobile layout", () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <WorkoutLogList exercises={exercises} workoutLogs={workoutLogs} />
+      </ThemeProvider>
+    );
+
+    const setRows = screen.getAllByTestId("edit-set-row");
+
+    expect(setRows).toHaveLength(2);
+    expect(within(setRows[0]).getByText("1")).toBeInTheDocument();
+    expect(within(setRows[0]).getByLabelText("重量")).toBeInTheDocument();
+    expect(within(setRows[0]).getByLabelText("回数")).toBeInTheDocument();
+    expect(
+      within(setRows[0]).getByRole("button", { name: "ベンチプレスのセット1を削除" })
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("重量")).toHaveLength(1);
+    expect(screen.getAllByText("回数")).toHaveLength(1);
+    expect(screen.getAllByLabelText("重量")).toHaveLength(2);
+    expect(screen.getAllByLabelText("回数")).toHaveLength(2);
   });
 
   it("renders an empty state", () => {
