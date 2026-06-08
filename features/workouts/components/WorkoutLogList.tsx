@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Save, Trash2 } from "lucide-react";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
@@ -179,6 +179,7 @@ const DeleteIconActionButton = styled(DeleteActionButton)`
 function SaveButton({ formId, pending }: { formId: string; pending: boolean }) {
   return (
     <SaveActionButton type="submit" variant="secondary" form={formId} disabled={pending}>
+      <Save aria-hidden="true" size={18} strokeWidth={2.2} />
       {pending ? "保存中" : "保存"}
     </SaveActionButton>
   );
@@ -189,6 +190,7 @@ function DeleteButton() {
 
   return (
     <DeleteActionButton type="submit" variant="ghost" disabled={pending}>
+      <Trash2 aria-hidden="true" size={18} strokeWidth={2.2} />
       {pending ? "削除中" : "削除"}
     </DeleteActionButton>
   );
