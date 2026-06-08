@@ -1,5 +1,6 @@
 "use client";
 
+import { Activity } from "lucide-react";
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -46,6 +47,34 @@ const Hero = styled.section`
   max-width: 42rem;
 `;
 
+const BrandHeading = styled.div`
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: ${({ theme }) => theme.space[3]};
+
+  @media (min-width: 834px) {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    column-gap: ${({ theme }) => theme.space[4]};
+  }
+`;
+
+const BrandMark = styled.span`
+  display: inline-flex;
+  width: 3.25rem;
+  height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${({ theme }) => theme.radii.card};
+  background: #187c70;
+  color: #ffffff;
+
+  @media (min-width: 834px) {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+`;
+
 const Eyebrow = styled.p`
   width: fit-content;
   margin: 0;
@@ -62,11 +91,12 @@ const Eyebrow = styled.p`
 const Title = styled.h1`
   margin: 0;
   color: #101816;
-  font-family: ${({ theme }) => theme.fonts.display};
+  font-family: var(--font-brand), ${({ theme }) => theme.fonts.display};
   font-size: 2.75rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: ${({ theme }) => theme.lineHeights.heading};
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
 
   @media (min-width: 834px) {
     font-size: ${({ theme }) => theme.fontSizes.pageTitle};
@@ -335,7 +365,12 @@ export default function HomePage() {
       <Content>
         <Hero>
           <Eyebrow>Precision Fitness SaaS</Eyebrow>
-          <Title>Workout Log</Title>
+          <BrandHeading>
+            <BrandMark aria-hidden="true">
+              <Activity size={24} strokeWidth={2.4} />
+            </BrandMark>
+            <Title>Workout Log</Title>
+          </BrandHeading>
           <Lead>
             トレーニング記録、総ボリューム、達成率を静かに比較できる個人向けログ管理ツールです。
           </Lead>

@@ -40,24 +40,30 @@ const Brand = styled(Link)`
   align-items: center;
   gap: ${({ theme }) => theme.space[2]};
   color: #101816;
-  font-family: ${({ theme }) => theme.fonts.display};
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 
   &:hover {
     text-decoration: none;
   }
 `;
 
+const BrandText = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-brand), ${({ theme }) => theme.fonts.display};
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.18;
+  padding-bottom: 0.03em;
+  white-space: nowrap;
+`;
+
 const BrandMark = styled.span`
   display: inline-flex;
   flex: 0 0 auto;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   align-items: center;
   justify-content: center;
   border-radius: ${({ theme }) => theme.radii.card};
@@ -125,7 +131,7 @@ export function MobileNavigation({ pathname }: MobileNavigationProps) {
           <BrandMark aria-hidden="true">
             <Activity size={18} strokeWidth={2.4} />
           </BrandMark>
-          Workout Log
+          <BrandText>Workout Log</BrandText>
         </Brand>
         <LogoutButton variant="ghost" />
       </MobileHeaderInner>
