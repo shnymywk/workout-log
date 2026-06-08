@@ -2,13 +2,14 @@
 
 import styled from "styled-components";
 
-import { Button, Field, Input, Label, Select } from "@/components/primitives";
+import { Button, Field, Label, Select } from "@/components/primitives";
 import type { Exercise } from "@/features/exercises/types/exercise";
 import type { WorkoutLogFilters } from "@/features/workouts/types/workout-log";
 
 type WorkoutLogFilterProps = {
   exercises: Exercise[];
   filters: WorkoutLogFilters;
+  trainedAts: string[];
 };
 
 const Form = styled.form`
@@ -48,17 +49,19 @@ const FilterButton = styled(Button)`
   }
 `;
 
-export function WorkoutLogFilter({ exercises, filters }: WorkoutLogFilterProps) {
+export function WorkoutLogFilter({ exercises, filters, trainedAts }: WorkoutLogFilterProps) {
   return (
     <Form action="/workouts">
       <Field>
         <Label htmlFor="filter-trained-at">日付</Label>
-        <Input
-          id="filter-trained-at"
-          name="trainedAt"
-          type="date"
-          defaultValue={filters.trainedAt ?? ""}
-        />
+        <Select id="filter-trained-at" name="trainedAt" defaultValue={filters.trainedAt ?? ""}>
+          <option value="">すべて</option>
+          {trainedAts.map((trainedAt) => (
+            <option key={trainedAt} value={trainedAt}>
+              {trainedAt}
+            </option>
+          ))}
+        </Select>
       </Field>
 
       <Field>

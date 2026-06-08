@@ -14,6 +14,8 @@ type WorkoutLogCreationPageProps = {
   exercisesError: string | null;
   workoutLogs: WorkoutLog[];
   workoutLogsError: string | null;
+  workoutLogDates: string[];
+  workoutLogDatesError: string | null;
   filters: WorkoutLogFilters;
 };
 
@@ -106,6 +108,8 @@ export function WorkoutLogCreationPage({
   exercisesError,
   workoutLogs,
   workoutLogsError,
+  workoutLogDates,
+  workoutLogDatesError,
   filters
 }: WorkoutLogCreationPageProps) {
   return (
@@ -143,7 +147,14 @@ export function WorkoutLogCreationPage({
             </WorkoutCardDescription>
           </WorkoutCardHeader>
           <WorkoutCardBody>
-            <WorkoutLogFilter exercises={exercises} filters={filters} />
+            {workoutLogDatesError ? (
+              <ErrorText role="alert">{workoutLogDatesError}</ErrorText>
+            ) : null}
+            <WorkoutLogFilter
+              exercises={exercises}
+              filters={filters}
+              trainedAts={workoutLogDates}
+            />
             {workoutLogsError ? (
               <ErrorText role="alert">{workoutLogsError}</ErrorText>
             ) : (

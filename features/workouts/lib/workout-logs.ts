@@ -6,6 +6,11 @@ type WorkoutLogsResult = {
   error: string | null;
 };
 
+type WorkoutLogDatesResult = {
+  trainedAts: string[];
+  error: string | null;
+};
+
 type WorkoutLogRow = {
   id: string;
   exercise_id: string;
@@ -24,6 +29,10 @@ type WorkoutLogRow = {
     weight: number;
     reps: number;
   }[];
+};
+
+type WorkoutLogDateRow = {
+  trained_at: string;
 };
 
 export async function getWorkoutLogs(filters: WorkoutLogFilters = {}): Promise<WorkoutLogsResult> {
@@ -86,6 +95,27 @@ export async function getWorkoutLogs(filters: WorkoutLogFilters = {}): Promise<W
         (firstSet, secondSet) => firstSet.set_number - secondSet.set_number
       )
     })),
+    error: null
+  };
+}
+
+export async function getWorkoutLogDates(): Promise<WorkoutLogDatesResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("workout_logs")
+    .select("trained_at")
+    .order("trained_at", { ascending: false })
+    .returns<WorkoutLogDateRow[]>();
+
+  if (error) {
+    return {
+      trainedAts: [],
+      error: "トレーニング記録の日付一覧を取得できませんでした。"
+    };
+  }
+
+  return {
+    trainedAts: Array.from(new Set(data.map((workoutLog) => workoutLog.trained_at))),
     error: null
   };
 }

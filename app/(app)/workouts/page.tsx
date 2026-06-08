@@ -1,6 +1,6 @@
 import { getExercises } from "@/features/exercises/lib/exercises";
 import { WorkoutLogCreationPage } from "@/features/workouts/components/WorkoutLogCreationPage";
-import { getWorkoutLogs } from "@/features/workouts/lib/workout-logs";
+import { getWorkoutLogDates, getWorkoutLogs } from "@/features/workouts/lib/workout-logs";
 
 type WorkoutsPageProps = {
   searchParams: Promise<{
@@ -25,9 +25,10 @@ export default async function WorkoutsPage({ searchParams }: WorkoutsPageProps) 
     trainedAt: normalizeFilterValue(trainedAt),
     exerciseId: normalizeFilterValue(exerciseId)
   };
-  const [exercisesResult, workoutLogsResult] = await Promise.all([
+  const [exercisesResult, workoutLogsResult, workoutLogDatesResult] = await Promise.all([
     getExercises(),
-    getWorkoutLogs(filters)
+    getWorkoutLogs(filters),
+    getWorkoutLogDates()
   ]);
 
   return (
@@ -36,6 +37,8 @@ export default async function WorkoutsPage({ searchParams }: WorkoutsPageProps) 
       exercisesError={exercisesResult.error}
       workoutLogs={workoutLogsResult.workoutLogs}
       workoutLogsError={workoutLogsResult.error}
+      workoutLogDates={workoutLogDatesResult.trainedAts}
+      workoutLogDatesError={workoutLogDatesResult.error}
       filters={filters}
     />
   );
