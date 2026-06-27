@@ -7,10 +7,6 @@ Next.js App Router、TypeScript、styled-components、Supabase Auth / Database �
 ## デモ
 
 - URL: https://workout-log-pi.vercel.app
-- テストアカウントID: `shnymywk.portfolio@gmail.com`
-- テストアカウントPassword: `9cAoTQlH3KSYPYvwKiQf`
-
-テストアカウントはポートフォリオ確認用の共有アカウントです。
 
 ## 作成意図
 
@@ -27,12 +23,16 @@ Next.js App Router、TypeScript、styled-components、Supabase Auth / Database �
 
 ## 主な機能
 
-- メールアドレスとパスワードによるログイン / ログアウト
+- メールアドレスとパスワードによる新規登録 / ログイン / ログアウト
+- ゲストログインによるデモデータ付きの動作確認
 - 未ログイン時の認証ページへのリダイレクト
 - 部位の作成・編集・削除
 - 種目の作成・編集・削除
+- 1つの種目に対する複数部位の紐づけ
 - 部位による種目フィルタリング
 - トレーニング記録の作成・編集・削除
+- 複数種目・複数セットをまとめて記録
+- セットごとの重量・回数の管理
 - 日付・種目による記録フィルタリング
 - 種目ごとの目標重量設定
 - 現在の最大重量と目標重量からの達成率表示
@@ -83,6 +83,7 @@ components/
 features/
   auth/
   dashboard/
+  demo/
   exercises/
   goals/
   workouts/
@@ -117,10 +118,14 @@ erDiagram
   auth_users ||--|| profiles : has
   auth_users ||--o{ body_parts : owns
   auth_users ||--o{ exercises : owns
+  auth_users ||--o{ exercise_body_parts : owns
   auth_users ||--o{ workout_logs : owns
+  auth_users ||--o{ workout_log_sets : owns
   auth_users ||--o{ goals : owns
-  body_parts ||--o{ exercises : categorizes
+  body_parts ||--o{ exercise_body_parts : categorizes
+  exercises ||--o{ exercise_body_parts : tagged_with
   exercises ||--o{ workout_logs : recorded_as
+  workout_logs ||--o{ workout_log_sets : has
   exercises ||--o{ goals : targeted_by
 ```
 
@@ -147,10 +152,19 @@ erDiagram
 | -------------- | -------------- |
 | `id`           | 種目ID         |
 | `user_id`      | 所有ユーザーID |
-| `body_part_id` | 紐づく部位ID   |
+| `body_part_id` | 代表部位ID     |
 | `name`         | 種目名         |
 | `created_at`   | 作成日時       |
 | `updated_at`   | 更新日時       |
+
+### exercise_body_parts
+
+| カラム         | 説明           |
+| -------------- | -------------- |
+| `exercise_id`  | 種目ID         |
+| `body_part_id` | 部位ID         |
+| `user_id`      | 所有ユーザーID |
+| `created_at`   | 作成日時       |
 
 ### workout_logs
 
@@ -167,6 +181,19 @@ erDiagram
 | `created_at`  | 作成日時       |
 | `updated_at`  | 更新日時       |
 
+### workout_log_sets
+
+| カラム           | 説明           |
+| ---------------- | -------------- |
+| `id`             | セットID       |
+| `workout_log_id` | 記録ID         |
+| `user_id`        | 所有ユーザーID |
+| `set_number`     | セット番号     |
+| `weight`         | 重量           |
+| `reps`           | 回数           |
+| `created_at`     | 作成日時       |
+| `updated_at`     | 更新日時       |
+
 ### goals
 
 | カラム          | 説明           |
@@ -178,7 +205,7 @@ erDiagram
 | `created_at`    | 作成日時       |
 | `updated_at`    | 更新日時       |
 
-全テーブルで Row Level Security を有効化し、`user_id = auth.uid()` の行のみ操作できるようにしています。`exercises`、`workout_logs`、`goals` では、関連する部位・種目が同じユーザーに属していることもトリガーで検証します。
+全テーブルで Row Level Security を有効化し、`user_id = auth.uid()` の行のみ操作できるようにしています。`exercises`、`exercise_body_parts`、`workout_logs`、`workout_log_sets`、`goals` では、関連する部位・種目・記録が同じユーザーに属していることもトリガーで検証します。
 
 ## セットアップ
 
@@ -221,6 +248,8 @@ Supabase プロジェクトを作成し、Authentication の Email / Password �
 20260603000300_create_workout_logs.sql
 20260603000400_create_goals.sql
 20260603000500_create_rls_policies.sql
+20260605000100_create_workout_log_sets.sql
+20260608000100_create_exercise_body_parts.sql
 ```
 
 Supabase CLI を使う場合は、プロジェクトと接続したうえで migration を適用してください。CLI を使わない場合は、Supabase Dashboard の SQL Editor から順番に実行できます。
@@ -251,8 +280,9 @@ npm test
 このリポジトリでは、以下を中心にテストしています。
 
 - フォーム入力のバリデーション
-- 認証UIの表示
+- 認証UIと新規登録モードの表示
 - トレーニング記録フォームと一覧UI
+- セット別記録の入力・編集UI
 - 総ボリューム計算
 - 目標達成率計算
 - ダッシュボードのサマリー集計
