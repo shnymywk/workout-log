@@ -201,9 +201,13 @@ cp .env.example .env.local
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+DEMO_GUEST_EMAIL=
+DEMO_GUEST_PASSWORD=
 ```
 
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` も読み込めますが、新規設定では `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` を優先します。
+
+ゲストログインを使う場合は、Supabase Auth でデモ専用ユーザーを手動作成し、そのメールアドレスとパスワードを `DEMO_GUEST_EMAIL` / `DEMO_GUEST_PASSWORD` に設定します。ゲストユーザーのデータはゲストログイン時に初期化されます。
 
 ### 3. Supabase の設定
 
@@ -272,6 +276,8 @@ Vercel にデプロイする場合は、GitHub リポジトリを Import し、�
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+DEMO_GUEST_EMAIL=
+DEMO_GUEST_PASSWORD=
 ```
 
 Build Command は `npm run build`、Install Command は `npm install` を想定しています。

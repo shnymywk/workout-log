@@ -1,9 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import type { LoginActionState, SignUpActionState } from "@/features/auth/action-state";
+import type {
+  GuestLoginActionState,
+  LoginActionState,
+  SignUpActionState
+} from "@/features/auth/action-state";
+import { resetGuestDemoData } from "@/features/demo/lib/guest-demo-seed";
 import { createClient } from "@/lib/supabase/server";
 
 function getSafeRedirectPath(value: FormDataEntryValue | null) {
@@ -29,6 +35,24 @@ async function getEmailRedirectUrl() {
   }
 
   return null;
+}
+
+function getGuestCredentials() {
+  const email = process.env.DEMO_GUEST_EMAIL?.trim();
+  const password = process.env.DEMO_GUEST_PASSWORD ?? "";
+
+  if (!email || !password) {
+    return null;
+  }
+
+  return { email, password };
+}
+
+function revalidateAppPages() {
+  revalidatePath("/dashboard");
+  revalidatePath("/workouts");
+  revalidatePath("/exercises");
+  revalidatePath("/goals");
 }
 
 export async function login(
@@ -58,6 +82,41 @@ export async function login(
   }
 
   redirect(redirectTo);
+}
+
+export async function loginAsGuest(): Promise<GuestLoginActionState> {
+  const credentials = getGuestCredentials();
+
+  if (!credentials) {
+    return {
+      error: "ゲストログイン設定が未設定です。環境変数を確認してください。"
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithPassword(credentials);
+
+  if (error || !data.user) {
+    return {
+      error: "ゲストログインできませんでした。ゲストアカウント設定を確認してください。"
+    };
+  }
+
+  const resetResult = await resetGuestDemoData({
+    supabase,
+    userId: data.user.id
+  });
+
+  if (resetResult.error) {
+    await supabase.auth.signOut();
+
+    return {
+      error: resetResult.error
+    };
+  }
+
+  revalidateAppPages();
+  redirect("/dashboard");
 }
 
 export async function signUp(

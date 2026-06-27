@@ -7,6 +7,10 @@ export type SignUpActionState = {
   success: string | null;
 };
 
+export type GuestLoginActionState = {
+  error: string | null;
+};
+
 export const initialLoginActionState: LoginActionState = {
   error: null
 };
@@ -14,4 +18,8 @@ export const initialLoginActionState: LoginActionState = {
 export const initialSignUpActionState: SignUpActionState = {
   error: null,
   success: null
+};
+
+export const initialGuestLoginActionState: GuestLoginActionState = {
+  error: null
 };
