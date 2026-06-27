@@ -5,8 +5,12 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import styled from "styled-components";
 
-import { initialLoginActionState, initialSignUpActionState } from "@/features/auth/action-state";
-import { login, signUp } from "@/features/auth/actions";
+import {
+  initialGuestLoginActionState,
+  initialLoginActionState,
+  initialSignUpActionState
+} from "@/features/auth/action-state";
+import { login, loginAsGuest, signUp } from "@/features/auth/actions";
 import {
   Button,
   Card,
@@ -134,6 +138,15 @@ const AuthSubmitButton = styled(Button)`
   }
 `;
 
+const GuestForm = styled.form`
+  display: grid;
+  gap: ${({ theme }) => theme.space[3]};
+`;
+
+const GuestSubmitButton = styled(Button)`
+  min-height: 3rem;
+`;
+
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
 
@@ -144,10 +157,24 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
   );
 }
 
+function GuestLoginButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <GuestSubmitButton type="submit" variant="secondary" disabled={pending}>
+      {pending ? "準備中" : "ゲストで試す"}
+    </GuestSubmitButton>
+  );
+}
+
 export function LoginForm({ initialMode = "login", nextPath = "/dashboard" }: LoginFormProps) {
   const [mode, setMode] = useState<"login" | "signUp">(initialMode);
   const [loginState, loginFormAction] = useActionState(login, initialLoginActionState);
   const [signUpState, signUpFormAction] = useActionState(signUp, initialSignUpActionState);
+  const [guestLoginState, guestLoginFormAction] = useActionState(
+    loginAsGuest,
+    initialGuestLoginActionState
+  );
   const isLoginMode = mode === "login";
 
   return (
@@ -225,6 +252,10 @@ export function LoginForm({ initialMode = "login", nextPath = "/dashboard" }: Lo
               : "メール確認が有効な場合は、確認メールのリンクから登録を完了します。"}
           </HelperText>
         </Form>
+        <GuestForm action={guestLoginFormAction}>
+          {guestLoginState.error ? <ErrorText role="alert">{guestLoginState.error}</ErrorText> : null}
+          <GuestLoginButton />
+        </GuestForm>
       </AuthCardBody>
     </AuthCard>
   );

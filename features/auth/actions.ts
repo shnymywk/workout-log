@@ -84,7 +84,13 @@ export async function login(
   redirect(redirectTo);
 }
 
-export async function loginAsGuest(): Promise<GuestLoginActionState> {
+export async function loginAsGuest(
+  _previousState: GuestLoginActionState,
+  _formData: FormData
+): Promise<GuestLoginActionState> {
+  void _previousState;
+  void _formData;
+
   const credentials = getGuestCredentials();
 
   if (!credentials) {

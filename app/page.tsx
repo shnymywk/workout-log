@@ -2,7 +2,12 @@
 
 import { Activity } from "lucide-react";
 import Link from "next/link";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import styled from "styled-components";
+
+import { initialGuestLoginActionState } from "@/features/auth/action-state";
+import { loginAsGuest } from "@/features/auth/actions";
 
 const metrics = [
   { label: "週間頻度", value: "4回", tone: "teal" },
@@ -118,6 +123,44 @@ const AuthActions = styled.div`
   gap: ${({ theme }) => theme.space[3]};
 `;
 
+const GuestForm = styled.form`
+  display: inline-flex;
+`;
+
+const AuthButton = styled.button<{ $variant?: "primary" | "secondary" }>`
+  display: inline-flex;
+  min-height: 3rem;
+  min-width: 9rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid
+    ${({ $variant }) => ($variant === "secondary" ? "rgba(24, 124, 112, 0.32)" : "transparent")};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ $variant }) => ($variant === "secondary" ? "#ffffff" : "#187c70")};
+  color: ${({ $variant }) => ($variant === "secondary" ? "#187c70" : "#ffffff")};
+  padding: 0.625rem 1.375rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ $variant }) =>
+      $variant === "secondary" ? "rgba(16, 75, 68, 0.36)" : "transparent"};
+    background: ${({ $variant }) => ($variant === "secondary" ? "#edf6f4" : "#104b44")};
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+  }
+`;
+
 const AuthLink = styled(Link)<{ $variant?: "primary" | "secondary" }>`
   display: inline-flex;
   min-height: 3rem;
@@ -146,6 +189,14 @@ const AuthLink = styled(Link)<{ $variant?: "primary" | "secondary" }>`
     text-decoration: none;
     transform: translateY(-1px);
   }
+`;
+
+const AuthErrorText = styled.p`
+  margin: ${({ theme }) => theme.space[2]} 0 0;
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: ${({ theme }) => theme.fontSizes.caption};
+  font-weight: 600;
+  letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
 const MetricGrid = styled.div`
@@ -359,7 +410,22 @@ const LogDetail = styled.p`
   letter-spacing: ${({ theme }) => theme.letterSpacing.normal};
 `;
 
+function GuestLoginSubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <AuthButton type="submit" disabled={pending}>
+      {pending ? "準備中" : "ゲストで試す"}
+    </AuthButton>
+  );
+}
+
 export default function HomePage() {
+  const [guestLoginState, guestLoginFormAction] = useActionState(
+    loginAsGuest,
+    initialGuestLoginActionState
+  );
+
   return (
     <Page>
       <Content>
@@ -376,11 +442,19 @@ export default function HomePage() {
           </Lead>
 
           <AuthActions aria-label="認証メニュー">
-            <AuthLink href="/login">ログイン</AuthLink>
+            <GuestForm action={guestLoginFormAction}>
+              <GuestLoginSubmitButton />
+            </GuestForm>
+            <AuthLink href="/login" $variant="secondary">
+              ログイン
+            </AuthLink>
             <AuthLink href="/login?mode=signUp" $variant="secondary">
               新規登録
             </AuthLink>
           </AuthActions>
+          {guestLoginState.error ? (
+            <AuthErrorText role="alert">{guestLoginState.error}</AuthErrorText>
+          ) : null}
 
           <MetricGrid aria-label="主要メトリック">
             {metrics.map((metric) => (

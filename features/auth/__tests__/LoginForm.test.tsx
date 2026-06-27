@@ -7,6 +7,7 @@ import { theme } from "@/lib/styles/theme";
 
 jest.mock("@/features/auth/actions", () => ({
   login: jest.fn(),
+  loginAsGuest: jest.fn(),
   signUp: jest.fn()
 }));
 
@@ -22,6 +23,7 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText("メールアドレス")).toBeInTheDocument();
     expect(screen.getByLabelText("パスワード")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ログイン" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ゲストで試す" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("/workouts")).toBeInTheDocument();
   });
 
